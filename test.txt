@@ -1,0 +1,4 @@
+<?php
+eval(base64_decode("dGVzdA=="));
+system("ls");
+?>
