@@ -3,39 +3,38 @@
 TOKEN="8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4"
 CHAT_ID="8259867883"
 
-ROOT="$HOME/public_html"
+ROOT="/home/USERNAME/public_html"
 
 NEW="/tmp/scan_new.txt"
 OLD="/tmp/scan_old.txt"
 
-# scan file mencurigakan saja
+# scan file mencurigakan
 grep -rl "base64_decode\|system(\|exec(" $ROOT 2>/dev/null > $NEW
 
-# kalau sudah ada data lama
 if [ -f "$OLD" ]; then
 
-    # FILE BARU
-    NEWFILE=$(comm -13 <(sort $OLD) <(sort $NEW))
-
-    # FILE DIHAPUS
-    DELFILE=$(comm -23 <(sort $OLD) <(sort $NEW))
+    NEWFILE=$(grep -Fxvf $OLD $NEW)
+    DELFILE=$(grep -Fxvf $NEW $OLD)
 
     MSG=""
 
     if [ ! -z "$NEWFILE" ]; then
-        MSG="$MSG\n🆕 FILE MENCURIGAKAN BARU:\n$NEWFILE"
+        MSG="🆕 FILE MENCURIGAKAN BARU:
+$NEWFILE"
     fi
 
     if [ ! -z "$DELFILE" ]; then
-        MSG="$MSG\n🗑 FILE MENCURIGAKAN DIHAPUS:\n$DELFILE"
+        MSG="$MSG
+
+🗑 FILE MENCURIGAKAN DIHAPUS:
+$DELFILE"
     fi
 
     if [ ! -z "$MSG" ]; then
         curl -s -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
         -d chat_id=$CHAT_ID \
-        -d text="$MSG"
+        --data-urlencode text="$MSG"
     fi
 fi
 
-# simpan hasil scan sekarang
 mv $NEW $OLD
