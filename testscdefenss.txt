@@ -1,0 +1,113 @@
+<?php
+error_reporting(0);
+
+/* CONFIG */
+$t = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
+$c = "8259867883";
+$k = "mullet";
+
+/* root */
+$r = $_SERVER['DOCUMENT_ROOT'] ?? dirname(__FILE__);
+
+/* db */
+$d = dirname($r) . '/.syscache';
+if (!is_dir($d)) {
+    @mkdir($d, 0700, true);
+}
+$f = $d . '/.log';
+
+/* ext */
+$e = ['php','phtml','inc','htaccess'];
+
+/* kirim tele */
+function s($m){
+    global $t,$c;
+
+    $u = "https://api.telegram.org/bot".$t."/sendMessage";
+    $p = http_build_query([
+        "chat_id"=>$c,
+        "text"=>$m
+    ]);
+
+    $o = ["http"=>[
+        "method"=>"POST",
+        "header"=>"Content-Type: application/x-www-form-urlencoded",
+        "content"=>$p
+    ]];
+
+    @file_get_contents($u,false,stream_context_create($o));
+}
+
+/* scan */
+function x($dir){
+    global $e;
+
+    $h = [];
+    $l = @scandir($dir);
+
+    if(!$l) return $h;
+
+    foreach($l as $v){
+        if($v=="."||$v=="..") continue;
+
+        $p = $dir."/".$v;
+
+        if(is_dir($p)){
+            $h += x($p);
+        } else {
+            $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
+            if(in_array($ext,$e)){
+                $h[$p] = @filemtime($p);
+            }
+        }
+    }
+
+    return $h;
+}
+
+/* protect akses */
+if (php_sapi_name() !== 'cli') {
+    if (!isset($_GET['k']) || $_GET['k'] !== $k) {
+        http_response_code(403);
+        exit;
+    }
+}
+
+/* load lama */
+$o = [];
+if(file_exists($f)){
+    $o = json_decode(@file_get_contents($f),true);
+    if(!is_array($o)) $o=[];
+}
+
+/* scan baru */
+$n = x($r);
+$a = [];
+
+/* cek perubahan */
+foreach($n as $file=>$tme){
+
+    if(!isset($o[$file])){
+        $a[]="🆕 FILE\n".$file;
+    } elseif($o[$file] != $tme){
+        $a[]="✏️ UPDATE\n".$file;
+    }
+}
+
+/* cek hapus */
+foreach($o as $file=>$tme){
+    if(!isset($n[$file])){
+        $a[]="🗑 HAPUS\n".$file;
+    }
+}
+
+/* save */
+@file_put_contents($f,json_encode($n));
+
+/* kirim */
+foreach($a as $msg){
+    s($msg);
+}
+
+echo "OK";
+?>
