@@ -5,7 +5,7 @@ set_time_limit(0);
 $token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
 $chat_id = "8259867883";
 
-/* TELEGRAM */
+/* TELEGRAM (PAKAI CURL BIAR GAK FAIL) */
 function sendTele($msg){
     global $token,$chat_id;
 
@@ -23,13 +23,15 @@ function sendTele($msg){
 
 /* ROOT */
 $root = $_SERVER['DOCUMENT_ROOT'];
-$db   = __DIR__."/.scan_db.json";
+
+/* DB */
+$db = __DIR__."/.scan_db.json";
 
 /* FILTER */
 $watch_ext = ['php','phtml','php5','php7','phar','pht','phTml'];
 $skip_dirs = ['cache','logs','tmp','vendor','node_modules','plugins','lib'];
 
-/* LOAD */
+/* LOAD DATA */
 $old = file_exists($db)?json_decode(file_get_contents($db),true):[];
 
 /* SCAN */
@@ -49,8 +51,6 @@ function scan($dir){
             $res += scan($path);
         } else {
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-            // fokus file berbahaya saja
             if(in_array($ext,$watch_ext)){
                 $res[$path] = @filemtime($path);
             }
@@ -59,7 +59,7 @@ function scan($dir){
     return $res;
 }
 
-/* DETEKSI REAL SHELL */
+/* DETEKSI SHELL (SAMA KARAKTER LO) */
 function detectShell($file){
 
     if(!file_exists($file)) return false;
@@ -69,21 +69,23 @@ function detectShell($file){
 
     $score = 0;
 
-    // command execution (inti shell)
+    // fungsi utama shell
     if(stripos($c,'system(')!==false) $score+=5;
     if(stripos($c,'exec(')!==false) $score+=5;
     if(stripos($c,'shell_exec')!==false) $score+=5;
     if(stripos($c,'passthru')!==false) $score+=5;
 
-    // eval + obfuscation
-    if(stripos($c,'eval(')!==false) $score+=4;
+    // obfuscation
     if(stripos($c,'base64_decode')!==false) $score+=4;
     if(stripos($c,'gzinflate')!==false) $score+=4;
 
-    // akses input user
+    // eval
+    if(stripos($c,'eval(')!==false) $score+=4;
+
+    // input user
     if(preg_match('/\$_(GET|POST|REQUEST)/i',$c)) $score+=2;
 
-    // base64 panjang (ciri khas shell)
+    // base64 panjang
     if(preg_match('/[A-Za-z0-9\/+]{200,}/',$c)) $score+=5;
 
     return ($score >= 6) ? $score : false;
@@ -118,8 +120,14 @@ foreach($old as $file=>$time){
 
     if(isset($new[$file])) continue;
 
-    $msg .= "🗑 FILE DIHAPUS\n";
-    $msg .= "📄 ".$file."\n\n";
+    if($time === "DIR"){
+        $msg .= "🗑 FOLDER DIHAPUS\n";
+        $msg .= "📁 ".$file."\n\n";
+    } else {
+        $msg .= "🗑 FILE DIHAPUS\n";
+        $msg .= "📄 ".$file."\n\n";
+    }
+
     $found = true;
 }
 
