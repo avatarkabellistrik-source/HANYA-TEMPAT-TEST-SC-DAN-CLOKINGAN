@@ -21,11 +21,11 @@ $root = $_SERVER['DOCUMENT_ROOT'] ?? __DIR__;
 $db = __DIR__."/.monitor_db.json";
 
 // ===== FILTER =====
-$watch_ext   = ['php','phtml','php5','php7','phar']; // hanya file rawan shell
+$watch_ext   = ['php','phtml','php5','php7','phar'];
 $ignore_dirs = ['cache','logs','tmp','vendor','node_modules'];
 $ignore_files = ['.monitor_db.json','error_log'];
 
-// ===== LOAD DB =====
+// ===== LOAD =====
 $old = file_exists($db)?json_decode(file_get_contents($db),true):[];
 
 // ===== SCAN =====
@@ -42,10 +42,10 @@ function scan($dir){
 
         if(is_dir($p)){
             if(in_array($f,$ignore_dirs)) continue;
+
+            $res[$p] = "DIR";
             $res += scan($p);
         } else {
-
-            // 🔥 FILTER EXTENSION
             $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
             if(!in_array($ext,$watch_ext)) continue;
 
@@ -55,11 +55,10 @@ function scan($dir){
     return $res;
 }
 
-// ===== DETEKSI BACKDOOR =====
+// ===== DETEKSI SHELL =====
 function detectShell($file){
     if(!file_exists($file)) return false;
 
-    // skip file kecil banget (biasanya bukan shell)
     if(filesize($file) < 20) return false;
 
     $c = @file_get_contents($file);
@@ -88,9 +87,34 @@ function detectShell($file){
 
 // ===== PROSES =====
 $new = scan($root);
-$msg  = "🚨 DETEKSI BACKDOOR 🚨\n\n";
+$msg  = "🚨 DETEKSI ANAK BUJANG MASUK SERVER 🚨\n\n";
 $found = false;
 
+// ===== 🔥 FIRST SCAN (CEK SEMUA FILE SAAT PERTAMA KALI) =====
+if(empty($old)){
+    foreach($new as $file=>$time){
+
+        if($time === "DIR") continue;
+
+        $det = detectShell($file);
+
+        if($det){
+            $msg .= "📁 ".basename(dirname($file))."\n\n";
+            $msg .= "📍 ".dirname($file)."\n\n";
+
+            $msg .= "📄 TERDETEKSI\n";
+            $msg .= "Tipe: BACKDOOR\n\n";
+
+            $msg .= "📄 ".basename($file)."\n";
+            $msg .= "📍 ".$file."\n";
+            $msg .= "🔎 Deteksi: ".$det."\n\n";
+
+            $found = true;
+        }
+    }
+}
+
+// ===== FILE BARU / DIUBAH =====
 foreach($new as $file=>$time){
 
     $is_new = !isset($old[$file]);
@@ -98,25 +122,46 @@ foreach($new as $file=>$time){
 
     if(!$is_new && !$is_mod) continue;
 
+    if($time === "DIR") continue;
+
     $det = detectShell($file);
 
-    // 🔥 HANYA KIRIM JIKA BACKDOOR
     if($det){
-
-        $dir  = dirname($file);
-        $name = basename($file);
-
-        $msg .= "📁 ".basename($dir)."\n\n";
-        $msg .= "📍 ".$dir."\n\n";
+        $msg .= "📁 ".basename(dirname($file))."\n\n";
+        $msg .= "📍 ".dirname($file)."\n\n";
 
         $msg .= "📄 ".($is_new ? "BARU SAJA" : "DIUBAH")."\n";
         $msg .= "Tipe: BACKDOOR\n\n";
 
-        $msg .= "📄 ".$name."\n";
+        $msg .= "📄 ".basename($file)."\n";
         $msg .= "📍 ".$file."\n";
         $msg .= "🔎 Deteksi: ".$det."\n\n";
 
         $found = true;
+    }
+}
+
+// ===== FILE / FOLDER DIHAPUS =====
+foreach($old as $file=>$time){
+
+    if(isset($new[$file])) continue;
+
+    if($time === "DIR"){
+        $msg .= "🗑 FOLDER DIHAPUS\n";
+        $msg .= "📁 ".basename($file)."\n";
+        $msg .= "📍 ".$file."\n\n";
+
+        $found = true;
+    } else {
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+        if(in_array($ext,$watch_ext)){
+            $msg .= "🗑 FILE DIHAPUS\n";
+            $msg .= "📄 ".basename($file)."\n";
+            $msg .= "📍 ".$file."\n\n";
+
+            $found = true;
+        }
     }
 }
 
@@ -137,5 +182,5 @@ if($found){
     sendTele($msg);
 }
 
-echo "SATPAM BELAWAN BUJANG";
+echo "SATPAM BELAWAN BUJANG AKTIF";
 ?>
