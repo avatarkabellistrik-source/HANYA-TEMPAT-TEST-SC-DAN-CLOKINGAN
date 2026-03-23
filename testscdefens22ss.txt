@@ -1,0 +1,141 @@
+<?php
+error_reporting(0);
+set_time_limit(0);
+
+$token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
+$chat_id = "8259867883";
+
+// ===== TELEGRAM =====
+function sendTele($msg){
+    global $token,$chat_id;
+    @file_get_contents("https://api.telegram.org/bot$token/sendMessage?".http_build_query([
+        "chat_id"=>$chat_id,
+        "text"=>$msg
+    ]));
+}
+
+// ===== ROOT =====
+$root = $_SERVER['DOCUMENT_ROOT'] ?? __DIR__;
+
+// ===== DB =====
+$db = __DIR__."/.monitor_db.json";
+
+// ===== FILTER =====
+$watch_ext   = ['php','phtml','php5','php7','phar']; // hanya file rawan shell
+$ignore_dirs = ['cache','logs','tmp','vendor','node_modules'];
+$ignore_files = ['.monitor_db.json','error_log'];
+
+// ===== LOAD DB =====
+$old = file_exists($db)?json_decode(file_get_contents($db),true):[];
+
+// ===== SCAN =====
+function scan($dir){
+    global $watch_ext, $ignore_dirs, $ignore_files;
+
+    $res=[];
+    foreach(@scandir($dir) as $f){
+        if($f=="."||$f=="..") continue;
+
+        if(in_array($f,$ignore_files)) continue;
+
+        $p = $dir."/".$f;
+
+        if(is_dir($p)){
+            if(in_array($f,$ignore_dirs)) continue;
+            $res += scan($p);
+        } else {
+
+            // 🔥 FILTER EXTENSION
+            $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
+            if(!in_array($ext,$watch_ext)) continue;
+
+            $res[$p] = @filemtime($p) ?: 0;
+        }
+    }
+    return $res;
+}
+
+// ===== DETEKSI BACKDOOR =====
+function detectShell($file){
+    if(!file_exists($file)) return false;
+
+    // skip file kecil banget (biasanya bukan shell)
+    if(filesize($file) < 20) return false;
+
+    $c = @file_get_contents($file);
+    if(!$c) return false;
+
+    $patterns = [
+        'eval(',
+        'base64_decode',
+        'gzinflate',
+        'shell_exec',
+        'system(',
+        'exec(',
+        'passthru',
+        'cmd=',
+        'php_uname'
+    ];
+
+    foreach($patterns as $p){
+        if(stripos($c,$p)!==false){
+            return $p;
+        }
+    }
+
+    return false;
+}
+
+// ===== PROSES =====
+$new = scan($root);
+$msg  = "🚨 DETEKSI BACKDOOR 🚨\n\n";
+$found = false;
+
+foreach($new as $file=>$time){
+
+    $is_new = !isset($old[$file]);
+    $is_mod = isset($old[$file]) && $old[$file] != $time;
+
+    if(!$is_new && !$is_mod) continue;
+
+    $det = detectShell($file);
+
+    // 🔥 HANYA KIRIM JIKA BACKDOOR
+    if($det){
+
+        $dir  = dirname($file);
+        $name = basename($file);
+
+        $msg .= "📁 ".basename($dir)."\n\n";
+        $msg .= "📍 ".$dir."\n\n";
+
+        $msg .= "📄 ".($is_new ? "BARU SAJA" : "DIUBAH")."\n";
+        $msg .= "Tipe: BACKDOOR\n\n";
+
+        $msg .= "📄 ".$name."\n";
+        $msg .= "📍 ".$file."\n";
+        $msg .= "🔎 Deteksi: ".$det."\n\n";
+
+        $found = true;
+    }
+}
+
+// ===== SAVE =====
+file_put_contents($db,json_encode($new));
+
+// ===== KIRIM =====
+if($found){
+
+    $msg .= "🌐 Link:\n";
+    $msg .= (isset($_SERVER['HTTP_HOST']) ? "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] : "CRON MODE")."\n\n";
+
+    $msg .= "🖥 IP:\n";
+    $msg .= ($_SERVER['REMOTE_ADDR'] ?? "CRON")."\n\n";
+
+    $msg .= "⏰ ".date("Y-m-d H:i:s");
+
+    sendTele($msg);
+}
+
+echo "SATPAM BELAWAN BUJANG";
+?>
