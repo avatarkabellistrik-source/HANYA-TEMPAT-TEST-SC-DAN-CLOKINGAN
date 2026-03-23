@@ -21,8 +21,8 @@ function sendTele($msg){
     curl_close($ch);
 }
 
-/* ROOT (scan semua) */
-$root = $_SERVER['DOCUMENT_ROOT'] ?? dirname(__FILE__);
+/* ROOT (AUTO SESUAI SERVER LO) */
+$root = $_SERVER['DOCUMENT_ROOT'];
 
 /* DB */
 $db = __DIR__."/.scan_db.json";
@@ -31,16 +31,16 @@ $db = __DIR__."/.scan_db.json";
 $watch_ext = ['php','phtml','phar','inc'];
 $skip_dirs = ['cache','logs','tmp','vendor','node_modules'];
 
-/* LOAD */
+/* LOAD DATA LAMA */
 $old = file_exists($db)?json_decode(file_get_contents($db),true):[];
 
-/* SCAN RECURSIVE (DALAM BANGET) */
+/* SCAN DALAM */
 function scan($dir){
     global $watch_ext,$skip_dirs;
 
-    $result = [];
+    $res = [];
     $list = @scandir($dir);
-    if(!$list) return $result;
+    if(!$list) return $res;
 
     foreach($list as $f){
         if($f=="."||$f=="..") continue;
@@ -50,18 +50,19 @@ function scan($dir){
         $path = $dir.'/'.$f;
 
         if(is_dir($path)){
-            $result += scan($path); // <<< scan dalam
+            $res[$path] = "DIR";
+            $res += scan($path);
         } else {
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             if(in_array($ext,$watch_ext)){
-                $result[$path] = @filemtime($path);
+                $res[$path] = @filemtime($path);
             }
         }
     }
-    return $result;
+    return $res;
 }
 
-/* DETEKSI SHELL KUAT */
+/* DETEKSI SHELL */
 function detectShell($file){
     if(!file_exists($file)) return false;
 
@@ -70,21 +71,17 @@ function detectShell($file){
 
     $score = 0;
 
-    // fungsi berbahaya
     if(stripos($c,'eval(')!==false) $score+=3;
     if(stripos($c,'system(')!==false) $score+=3;
     if(stripos($c,'exec(')!==false) $score+=3;
     if(stripos($c,'shell_exec')!==false) $score+=3;
 
-    // obfuscation
     if(stripos($c,'base64_decode')!==false) $score+=2;
     if(stripos($c,'gzinflate')!==false) $score+=2;
 
-    // indikator
     if(stripos($c,'$_GET')!==false) $score+=1;
     if(stripos($c,'$_POST')!==false) $score+=1;
 
-    // base64 panjang
     if(preg_match('/[A-Za-z0-9\/+]{150,}/', $c)) $score+=2;
 
     return ($score >= 4) ? $score : false;
@@ -92,25 +89,42 @@ function detectShell($file){
 
 /* SCAN */
 $new = scan($root);
-$msg = "🚨 SHELL / BACKDOOR TERDETEKSI 🚨\n\n";
+$msg = "";
 $found = false;
 
-/* CEK FILE */
+/* FILE BARU / DIUBAH */
 foreach($new as $file=>$time){
 
     $is_new = !isset($old[$file]);
     $is_mod = isset($old[$file]) && $old[$file] != $time;
 
     if(!$is_new && !$is_mod) continue;
+    if($time === "DIR") continue;
 
     $risk = detectShell($file);
 
     if($risk){
-        $msg .= "📄 ".($is_new?"FILE BARU":"FILE DIUBAH")."\n";
-        $msg .= "📍 ".$file."\n";
+        $msg .= "🚨 FILE MENCURIGAKAN ".($is_new?"BARU":"DIUBAH")."\n";
+        $msg .= "📄 ".$file."\n";
         $msg .= "⚠️ LEVEL: ".$risk."\n\n";
         $found = true;
     }
+}
+
+/* FILE / FOLDER DIHAPUS */
+foreach($old as $file=>$time){
+
+    if(isset($new[$file])) continue;
+
+    if($time === "DIR"){
+        $msg .= "🗑 FOLDER DIHAPUS\n";
+        $msg .= "📁 ".$file."\n\n";
+    } else {
+        $msg .= "🗑 FILE DIHAPUS\n";
+        $msg .= "📄 ".$file."\n\n";
+    }
+
+    $found = true;
 }
 
 /* SAVE */
@@ -122,5 +136,5 @@ if($found){
     sendTele($msg);
 }
 
-echo "SCAN AKTIF";
+echo "SATPAM BELAWAN BUJANG AKTIF";
 ?>
