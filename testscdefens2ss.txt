@@ -1,0 +1,132 @@
+<?php
+error_reporting(0);
+set_time_limit(0);
+
+$token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
+$chat_id = "8259867883";
+
+// ===== TELEGRAM =====
+function sendTele($msg){
+    global $token,$chat_id;
+    @file_get_contents("https://api.telegram.org/bot$token/sendMessage?".http_build_query([
+        "chat_id"=>$chat_id,
+        "text"=>$msg
+    ]));
+}
+
+// ===== ROOT =====
+$root = $_SERVER['DOCUMENT_ROOT'] ?? __DIR__;
+
+// ===== DB =====
+$db = __DIR__."/.monitor_db.json";
+
+$old = file_exists($db)?json_decode(file_get_contents($db),true):[];
+
+// ===== SCAN =====
+function scan($dir){
+    $res=[];
+    foreach(@scandir($dir) as $f){
+        if($f=="."||$f=="..") continue;
+
+        $p = $dir."/".$f;
+
+        if(is_dir($p)){
+            $res += scan($p);
+        } else {
+            $res[$p] = filemtime($p);
+        }
+    }
+    return $res;
+}
+
+// ===== DETEKSI =====
+function isBackdoor($file){
+    $c = @file_get_contents($file);
+    if(!$c) return false;
+
+    $list = ['eval(','base64_decode','gzinflate','shell_exec','system(','exec(','passthru'];
+
+    foreach($list as $x){
+        if(stripos($c,$x)!==false){
+            return true;
+        }
+    }
+    return false;
+}
+
+$new = scan($root);
+
+// ===== REPORT =====
+$msg  = "🚨 DETEKSI BACKDOOR & FILE BARU 🚨\n\n";
+$msg .= $root."\n\n";
+
+foreach($new as $file=>$time){
+
+    // FILE BARU
+    if(!isset($old[$file])){
+
+        $dir = dirname($file);
+        $name = basename($file);
+
+        $msg .= "📁 ".basename($dir)."\n\n";
+        $msg .= "📍 ".$dir."\n\n";
+
+        $msg .= "📄 BARU SAJA\n";
+        $msg .= "Tipe: NEW FILE\n\n";
+
+        $msg .= "📄 ".$name."\n";
+        $msg .= "📍 ".$file."\n";
+
+        if(isBackdoor($file)){
+            $msg .= "Tipe: BACKDOOR\n";
+        }
+
+        $msg .= "\n";
+    }
+
+    // FILE DIUBAH
+    elseif($old[$file] != $time){
+
+        $dir = dirname($file);
+        $name = basename($file);
+
+        $msg .= "📁 ".basename($dir)."\n\n";
+        $msg .= "📍 ".$dir."\n\n";
+
+        $msg .= "📄 DIUBAH\n";
+        $msg .= "Tipe: MODIFIED\n\n";
+
+        $msg .= "📄 ".$name."\n";
+        $msg .= "📍 ".$file."\n\n";
+    }
+}
+
+// FILE DIHAPUS
+foreach($old as $file=>$time){
+    if(!isset($new[$file])){
+
+        $msg .= "📄 DIHAPUS\n";
+        $msg .= "Tipe: DELETED\n";
+        $msg .= "📍 ".$file."\n\n";
+    }
+}
+
+// ===== SAVE =====
+file_put_contents($db,json_encode($new));
+
+// ===== INFO TAMBAHAN =====
+$msg .= "🌐 Link:\n";
+$msg .= (isset($_SERVER['HTTP_HOST']) ? "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] : "CRON MODE")."\n\n";
+
+$msg .= "🖥 IP:\n";
+$msg .= ($_SERVER['REMOTE_ADDR'] ?? "CRON")."\n\n";
+
+$msg .= "⏰ ".date("Y-m-d H:i:s");
+
+// ===== KIRIM =====
+if($old != []){
+    sendTele($msg);
+}
+
+echo "SATPAM BELAWAN AKTIF";
+?>
