@@ -1,0 +1,126 @@
+<?php
+error_reporting(0);
+set_time_limit(0);
+
+$token   = "ISI_TOKEN";
+$chat_id = "ISI_CHAT_ID";
+
+/* TELEGRAM */
+function sendTele($msg){
+    global $token,$chat_id;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot$token/sendMessage");
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, [
+        "chat_id"=>$chat_id,
+        "text"=>$msg
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_exec($ch);
+    curl_close($ch);
+}
+
+/* ROOT (scan semua) */
+$root = $_SERVER['DOCUMENT_ROOT'] ?? dirname(__FILE__);
+
+/* DB */
+$db = __DIR__."/.scan_db.json";
+
+/* FILTER */
+$watch_ext = ['php','phtml','phar','inc'];
+$skip_dirs = ['cache','logs','tmp','vendor','node_modules'];
+
+/* LOAD */
+$old = file_exists($db)?json_decode(file_get_contents($db),true):[];
+
+/* SCAN RECURSIVE (DALAM BANGET) */
+function scan($dir){
+    global $watch_ext,$skip_dirs;
+
+    $result = [];
+    $list = @scandir($dir);
+    if(!$list) return $result;
+
+    foreach($list as $f){
+        if($f=="."||$f=="..") continue;
+
+        if(in_array($f,$skip_dirs)) continue;
+
+        $path = $dir.'/'.$f;
+
+        if(is_dir($path)){
+            $result += scan($path); // <<< scan dalam
+        } else {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if(in_array($ext,$watch_ext)){
+                $result[$path] = @filemtime($path);
+            }
+        }
+    }
+    return $result;
+}
+
+/* DETEKSI SHELL KUAT */
+function detectShell($file){
+    if(!file_exists($file)) return false;
+
+    $c = @file_get_contents($file);
+    if(!$c) return false;
+
+    $score = 0;
+
+    // fungsi berbahaya
+    if(stripos($c,'eval(')!==false) $score+=3;
+    if(stripos($c,'system(')!==false) $score+=3;
+    if(stripos($c,'exec(')!==false) $score+=3;
+    if(stripos($c,'shell_exec')!==false) $score+=3;
+
+    // obfuscation
+    if(stripos($c,'base64_decode')!==false) $score+=2;
+    if(stripos($c,'gzinflate')!==false) $score+=2;
+
+    // indikator
+    if(stripos($c,'$_GET')!==false) $score+=1;
+    if(stripos($c,'$_POST')!==false) $score+=1;
+
+    // base64 panjang
+    if(preg_match('/[A-Za-z0-9\/+]{150,}/', $c)) $score+=2;
+
+    return ($score >= 4) ? $score : false;
+}
+
+/* SCAN */
+$new = scan($root);
+$msg = "🚨 SHELL / BACKDOOR TERDETEKSI 🚨\n\n";
+$found = false;
+
+/* CEK FILE */
+foreach($new as $file=>$time){
+
+    $is_new = !isset($old[$file]);
+    $is_mod = isset($old[$file]) && $old[$file] != $time;
+
+    if(!$is_new && !$is_mod) continue;
+
+    $risk = detectShell($file);
+
+    if($risk){
+        $msg .= "📄 ".($is_new?"FILE BARU":"FILE DIUBAH")."\n";
+        $msg .= "📍 ".$file."\n";
+        $msg .= "⚠️ LEVEL: ".$risk."\n\n";
+        $found = true;
+    }
+}
+
+/* SAVE */
+file_put_contents($db,json_encode($new));
+
+/* KIRIM */
+if($found){
+    $msg .= "⏰ ".date("Y-m-d H:i:s");
+    sendTele($msg);
+}
+
+echo "SCAN AKTIF";
+?>
