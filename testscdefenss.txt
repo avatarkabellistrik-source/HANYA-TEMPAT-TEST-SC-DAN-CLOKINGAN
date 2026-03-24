@@ -2,7 +2,7 @@
 error_reporting(0);
 set_time_limit(0);
 
-/* CONFIG */
+/* ================= CONFIG ================= */
 $token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
 $chat_id = "8259867883";
 
@@ -26,8 +26,6 @@ $root = $_SERVER['DOCUMENT_ROOT'] ?: __DIR__;
 
 /* DB */
 $db = __DIR__."/.scan_db.json";
-
-/* ANTI SPAM DB */
 $reported_db = __DIR__."/.reported.json";
 
 /* EXT */
@@ -37,7 +35,7 @@ $watch_ext = ['php','phtml','php5','php7','phar','pht'];
 $old = file_exists($db)?json_decode(file_get_contents($db),true):[];
 $reported = file_exists($reported_db)?json_decode(file_get_contents($reported_db),true):[];
 
-/* SCAN */
+/* SCAN (DEEP) */
 function scan($dir){
     global $watch_ext;
 
@@ -59,34 +57,42 @@ function scan($dir){
             }
         }
     }
-
     return $res;
 }
 
-/* DETEKSI SHELL (SUPER KETAT) */
+/* DETEKSI SHELL */
 function detectShell($file){
 
     if(!file_exists($file)) return false;
+
+    // skip file besar (biasanya legit)
+    if(filesize($file) > 500000) return false;
 
     $c = @file_get_contents($file);
     if(!$c) return false;
 
     $score = 0;
 
+    // 🚨 REMOTE LOADER
+    if(preg_match('/https?:\/\/.+/i',$c)) $score+=5;
+    if(preg_match('/file_get_contents\s*\(\s*[\'"]https?:\/\//i',$c)) $score+=10;
+
+    // eval + external
+    if(stripos($c,'eval(')!==false && preg_match('/https?:\/\//i',$c)) $score+=10;
+
     // command execution
-    if(stripos($c,'system(')!==false) $score+=6;
-    if(stripos($c,'exec(')!==false) $score+=6;
-    if(stripos($c,'shell_exec')!==false) $score+=6;
-    if(stripos($c,'passthru')!==false) $score+=6;
+    if(stripos($c,'system(')!==false) $score+=5;
+    if(stripos($c,'exec(')!==false) $score+=5;
+    if(stripos($c,'shell_exec')!==false) $score+=5;
 
     // obfuscation
-    if(stripos($c,'base64_decode')!==false) $score+=5;
-    if(stripos($c,'gzinflate')!==false) $score+=5;
+    if(stripos($c,'base64_decode')!==false) $score+=4;
+    if(stripos($c,'gzinflate')!==false) $score+=4;
 
-    // eval
-    if(stripos($c,'eval(')!==false) $score+=5;
+    // kombinasi kuat
+    if(preg_match('/base64_decode/i',$c) && preg_match('/eval/i',$c)) $score+=8;
 
-    // kombinasi penting
+    // input + exec
     if(preg_match('/\$_(GET|POST|REQUEST)/i',$c) &&
        preg_match('/system|exec|shell_exec/i',$c)){
         $score+=6;
@@ -94,13 +100,13 @@ function detectShell($file){
 
     // base64 panjang
     if(preg_match('/[A-Za-z0-9\/+]{200,}/',$c)){
-        $score+=6;
+        $score+=5;
     }
 
     return ($score >= 8) ? $score : false;
 }
 
-/* PROCESS */
+/* ================= PROCESS ================= */
 $new = scan($root);
 
 $msg = "🚨 SHELL / BACKDOOR TERDETEKSI 🚨\n\n";
@@ -108,6 +114,12 @@ $found = false;
 
 /* FILE BARU / DIUBAH */
 foreach($new as $file=>$time){
+
+    // skip folder legit (biar gak spam)
+    if(stripos($file,'/vendor/')!==false) continue;
+    if(stripos($file,'/lib/')!==false) continue;
+    if(stripos($file,'/plugins/')!==false) continue;
+    if(stripos($file,'/cache/')!==false) continue;
 
     $is_new = !isset($old[$file]);
     $is_mod = isset($old[$file]) && $old[$file] != $time;
@@ -118,7 +130,7 @@ foreach($new as $file=>$time){
 
     if($risk){
 
-        // 🔥 ANTI SPAM (kalau sudah pernah dikirim, skip)
+        // 🔥 ANTI SPAM
         if(isset($reported[$file]) && $reported[$file] == $time){
             continue;
         }
@@ -134,10 +146,13 @@ foreach($new as $file=>$time){
 
 /* FILE DIHAPUS */
 foreach($old as $file=>$time){
+
     if(!isset($new[$file])){
 
         if(isset($reported[$file])){
-            $msg .= "🗑 FILE SHELL DIHAPUS\n📄 $file\n\n";
+            $msg .= "🗑 FILE SHELL DIHAPUS\n";
+            $msg .= "📄 $file\n\n";
+
             unset($reported[$file]);
             $found = true;
         }
@@ -154,5 +169,5 @@ if($found){
     sendTele($msg);
 }
 
-echo "SATPAM ANTI SPAM AKTIF";
+echo "SATPAM FINAL AKTIF";
 ?>
