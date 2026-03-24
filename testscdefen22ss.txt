@@ -73,7 +73,7 @@ function scan($dir){
 /* ================= PROCESS ================= */
 $new = scan($root);
 
-$msg = "🚨 AKTIVITAS FILE TERDETEKSI 🚨\n\n";
+$msg = "🚨 ANAK BUJANG TERDETEKSI 🚨\n\n";
 $found = false;
 
 /* FILE BARU / DIUBAH */
@@ -107,5 +107,5 @@ if($found){
 }
 
 /* OUTPUT */
-echo "MONITOR AKTIF ".date("H:i:s");
+echo "SATPAM BUJANG x BANDUNG AKTIF ".date("H:i:s");
 ?>
