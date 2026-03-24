@@ -1,0 +1,178 @@
+<?php
+error_reporting(0);
+set_time_limit(0);
+
+// ================= CONFIG =================
+$token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
+$chat_id = "8259867883";
+
+// ================= TELEGRAM =================
+function sendTele($msg){
+    global $token,$chat_id;
+
+    $url = "https://api.telegram.org/bot".$token."/sendMessage";
+    $data = [
+        "chat_id"=>$chat_id,
+        "text"=>$msg
+    ];
+
+    $options = [
+        "http" => [
+            "header"  => "Content-type: application/x-www-form-urlencoded",
+            "method"  => "POST",
+            "content" => http_build_query($data),
+            "timeout" => 15
+        ]
+    ];
+
+    @file_get_contents($url,false,stream_context_create($options));
+}
+
+// ================= ROOT AUTO =================
+$root = realpath(__DIR__ . "/../public_html");
+
+// fallback kalau gagal
+if(!$root || !is_dir($root)){
+    $root = realpath(dirname(__DIR__) . "/public_html");
+}
+
+// kalau masih gagal → stop (biar gak scan kosong)
+if(!$root || !is_dir($root)){
+    echo "ROOT ERROR";
+    exit;
+}
+
+// ================= DB =================
+$db = __DIR__."/.scan_db.json";
+
+// ================= FILTER =================
+$watch_ext = ['php','phtml','php5','php7','phar','pht'];
+$skip_dirs = ['cache','logs','tmp','vendor','node_modules'];
+$skip_files = ['.scan_db.json','error_log'];
+
+// ================= LOAD =================
+$old = file_exists($db) ? json_decode(file_get_contents($db),true) : [];
+
+// ================= SCAN =================
+function scan($dir){
+    global $watch_ext,$skip_dirs,$skip_files;
+
+    $res = [];
+    $files = @scandir($dir);
+    if(!$files) return $res;
+
+    foreach($files as $f){
+        if($f=="."||$f=="..") continue;
+        if(in_array($f,$skip_files)) continue;
+
+        $path = $dir.'/'.$f;
+
+        if(is_dir($path)){
+            if(in_array($f,$skip_dirs)) continue;
+            $res[$path] = "DIR";
+            $res += scan($path);
+        } else {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if(in_array($ext,$watch_ext)){
+                $res[$path] = @filemtime($path) ?: 0;
+            }
+        }
+    }
+    return $res;
+}
+
+// ================= DETECT =================
+function detectShell($file){
+
+    if(!file_exists($file)) return false;
+    if(filesize($file) < 30) return false;
+
+    $c = @file_get_contents($file);
+    if(!$c) return false;
+
+    $score = 0;
+
+    // fungsi berbahaya
+    foreach(['system(','exec(','shell_exec','passthru','popen','proc_open'] as $d){
+        if(stripos($c,$d)!==false) $score+=5;
+    }
+
+    // obfuscation
+    foreach(['base64_decode','gzinflate','gzuncompress','str_rot13'] as $o){
+        if(stripos($c,$o)!==false) $score+=3;
+    }
+
+    // eval
+    if(stripos($c,'eval(')!==false) $score+=4;
+
+    // input user
+    if(preg_match('/\$_(GET|POST|REQUEST)/i',$c)) $score+=2;
+
+    // base64 panjang
+    if(preg_match('/[A-Za-z0-9\/+]{200,}/',$c)) $score+=4;
+
+    // kombinasi bahaya
+    if($score >= 6) return $score;
+
+    return false;
+}
+
+// ================= PROSES =================
+$new = scan($root);
+$msg = "🚨 BACKDOOR TERDETEKSI 🚨\n\n";
+$found = false;
+
+// ===== FIRST SCAN =====
+if(empty($old)){
+    foreach($new as $file=>$time){
+        if($time === "DIR") continue;
+
+        $risk = detectShell($file);
+        if($risk){
+            $msg .= "📄 SHELL TERSEMBUNYI\n";
+            $msg .= "📍 ".$file."\n";
+            $msg .= "⚠️ LEVEL: ".$risk."\n\n";
+            $found = true;
+        }
+    }
+}
+
+// ===== FILE BARU / DIUBAH =====
+foreach($new as $file=>$time){
+
+    $is_new = !isset($old[$file]);
+    $is_mod = isset($old[$file]) && $old[$file] != $time;
+
+    if(!$is_new && !$is_mod) continue;
+    if($time === "DIR") continue;
+
+    $risk = detectShell($file);
+
+    if($risk){
+        $msg .= "📄 ".($is_new?"BARU":"DIUBAH")."\n";
+        $msg .= "📍 ".$file."\n";
+        $msg .= "⚠️ LEVEL: ".$risk."\n\n";
+        $found = true;
+    }
+}
+
+// ===== FILE DIHAPUS =====
+foreach($old as $file=>$time){
+    if(isset($new[$file])) continue;
+
+    $msg .= "🗑 DIHAPUS\n";
+    $msg .= "📍 ".$file."\n\n";
+    $found = true;
+}
+
+// ===== SAVE =====
+file_put_contents($db,json_encode($new));
+
+// ===== KIRIM =====
+if($found){
+    $msg .= "⏰ ".date("Y-m-d H:i:s");
+    sendTele($msg);
+}
+
+echo "SATPAM AKTIF";
+?>
