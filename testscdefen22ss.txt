@@ -1,143 +1,127 @@
 <?php
-error_reporting(0);
+error_reporting(E_ALL);
 set_time_limit(0);
 
-// ================= CONFIG =================
+/* ================= CONFIG ================= */
 $token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
 $chat_id = "8259867883";
 
-// ================= TELEGRAM =================
+/* TELEGRAM */
 function sendTele($msg){
     global $token,$chat_id;
 
-    $url = "https://api.telegram.org/bot".$token."/sendMessage";
-    $data = [
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot$token/sendMessage");
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, [
         "chat_id"=>$chat_id,
         "text"=>$msg
-    ];
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $options = [
-        "http" => [
-            "header"  => "Content-type: application/x-www-form-urlencoded",
-            "method"  => "POST",
-            "content" => http_build_query($data),
-            "timeout" => 15
-        ]
-    ];
+    $res = curl_exec($ch);
 
-    @file_get_contents($url,false,stream_context_create($options));
+    if(!$res){
+        echo "CURL ERROR: ".curl_error($ch)."\n";
+    }
+
+    curl_close($ch);
 }
 
-// ================= ROOT AUTO =================
-$root = realpath(__DIR__ . "/../public_html");
+/* ROOT */
+$root = $_SERVER['DOCUMENT_ROOT'] ?: __DIR__;
 
-// fallback kalau gagal
-if(!$root || !is_dir($root)){
-    $root = realpath(dirname(__DIR__) . "/public_html");
-}
-
-// kalau masih gagal → stop (biar gak scan kosong)
-if(!$root || !is_dir($root)){
-    echo "ROOT ERROR";
-    exit;
-}
-
-// ================= DB =================
+/* DATABASE */
 $db = __DIR__."/.scan_db.json";
 
-// ================= FILTER =================
-$watch_ext = ['php','phtml','php5','php7','phar','pht'];
-$skip_dirs = ['cache','logs','tmp','vendor','node_modules'];
-$skip_files = ['.scan_db.json','error_log'];
+/* EXTENSION YANG DIAWASI */
+$watch_ext = ['php','phtml','php5','php7','phar','pht','html','htm'];
 
-// ================= LOAD =================
-$old = file_exists($db) ? json_decode(file_get_contents($db),true) : [];
+/* JANGAN SKIP DULU (BIAR AGRESIF) */
+$skip_dirs = [];
 
-// ================= SCAN =================
+/* LOAD DATA */
+$old = file_exists($db) ? json_decode(file_get_contents($db), true) : [];
+
+/* ================= SCAN ================= */
 function scan($dir){
-    global $watch_ext,$skip_dirs,$skip_files;
+    global $watch_ext,$skip_dirs;
 
     $res = [];
+
     $files = @scandir($dir);
     if(!$files) return $res;
 
     foreach($files as $f){
         if($f=="."||$f=="..") continue;
-        if(in_array($f,$skip_files)) continue;
+
+        if(in_array($f,$skip_dirs)) continue;
 
         $path = $dir.'/'.$f;
 
         if(is_dir($path)){
-            if(in_array($f,$skip_dirs)) continue;
             $res[$path] = "DIR";
             $res += scan($path);
         } else {
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             if(in_array($ext,$watch_ext)){
-                $res[$path] = @filemtime($path) ?: 0;
+                $res[$path] = @filemtime($path);
             }
         }
     }
+
     return $res;
 }
 
-// ================= DETECT =================
+/* ================= DETECT ================= */
 function detectShell($file){
 
     if(!file_exists($file)) return false;
-    if(filesize($file) < 30) return false;
 
     $c = @file_get_contents($file);
     if(!$c) return false;
 
     $score = 0;
 
-    // fungsi berbahaya
-    foreach(['system(','exec(','shell_exec','passthru','popen','proc_open'] as $d){
-        if(stripos($c,$d)!==false) $score+=5;
-    }
+    /* EXECUTION */
+    if(stripos($c,'system(')!==false) $score+=5;
+    if(stripos($c,'exec(')!==false) $score+=5;
+    if(stripos($c,'shell_exec')!==false) $score+=5;
+    if(stripos($c,'passthru')!==false) $score+=5;
 
-    // obfuscation
-    foreach(['base64_decode','gzinflate','gzuncompress','str_rot13'] as $o){
-        if(stripos($c,$o)!==false) $score+=3;
-    }
+    /* OBFUSCATION */
+    if(stripos($c,'base64_decode')!==false) $score+=4;
+    if(stripos($c,'gzinflate')!==false) $score+=4;
+    if(stripos($c,'str_rot13')!==false) $score+=3;
 
-    // eval
-    if(stripos($c,'eval(')!==false) $score+=4;
+    /* EVAL */
+    if(stripos($c,'eval(')!==false) $score+=5;
 
-    // input user
-    if(preg_match('/\$_(GET|POST|REQUEST)/i',$c)) $score+=2;
+    /* ADVANCED */
+    if(stripos($c,'assert(')!==false) $score+=5;
+    if(stripos($c,'create_function')!==false) $score+=4;
 
-    // base64 panjang
-    if(preg_match('/[A-Za-z0-9\/+]{200,}/',$c)) $score+=4;
+    if(stripos($c,'preg_replace')!==false && stripos($c,'/e')!==false) $score+=5;
 
-    // kombinasi bahaya
-    if($score >= 6) return $score;
+    /* USER INPUT */
+    if(preg_match('/\$_(GET|POST|REQUEST|COOKIE)/i',$c)) $score+=2;
 
-    return false;
+    /* BASE64 PANJANG */
+    if(preg_match('/[A-Za-z0-9\/+]{150,}/',$c)) $score+=5;
+
+    /* WEIRD VARIABLE */
+    if(preg_match('/\$[a-zA-Z0-9]{1,2}\s*=\s*@?\$/',$c)) $score+=3;
+
+    return ($score >= 4) ? $score : false;
 }
 
-// ================= PROSES =================
+/* ================= PROCESS ================= */
 $new = scan($root);
-$msg = "🚨 BACKDOOR TERDETEKSI 🚨\n\n";
+
+$msg = "🚨 SHELL / BACKDOOR ALERT 🚨\n\n";
 $found = false;
 
-// ===== FIRST SCAN =====
-if(empty($old)){
-    foreach($new as $file=>$time){
-        if($time === "DIR") continue;
-
-        $risk = detectShell($file);
-        if($risk){
-            $msg .= "📄 SHELL TERSEMBUNYI\n";
-            $msg .= "📍 ".$file."\n";
-            $msg .= "⚠️ LEVEL: ".$risk."\n\n";
-            $found = true;
-        }
-    }
-}
-
-// ===== FILE BARU / DIUBAH =====
+/* FILE BARU / DIUBAH */
 foreach($new as $file=>$time){
 
     $is_new = !isset($old[$file]);
@@ -149,30 +133,36 @@ foreach($new as $file=>$time){
     $risk = detectShell($file);
 
     if($risk){
-        $msg .= "📄 ".($is_new?"BARU":"DIUBAH")."\n";
+        $msg .= "📄 ".($is_new?"FILE BARU":"FILE DIUBAH")."\n";
         $msg .= "📍 ".$file."\n";
-        $msg .= "⚠️ LEVEL: ".$risk."\n\n";
+        $msg .= "⚠️ SCORE: ".$risk."\n\n";
         $found = true;
     }
 }
 
-// ===== FILE DIHAPUS =====
+/* FILE DIHAPUS */
 foreach($old as $file=>$time){
+
     if(isset($new[$file])) continue;
 
-    $msg .= "🗑 DIHAPUS\n";
-    $msg .= "📍 ".$file."\n\n";
+    if($time === "DIR"){
+        $msg .= "🗑 FOLDER DIHAPUS\n📁 ".$file."\n\n";
+    } else {
+        $msg .= "🗑 FILE DIHAPUS\n📄 ".$file."\n\n";
+    }
+
     $found = true;
 }
 
-// ===== SAVE =====
+/* SAVE DATABASE */
 file_put_contents($db,json_encode($new));
 
-// ===== KIRIM =====
+/* KIRIM */
 if($found){
     $msg .= "⏰ ".date("Y-m-d H:i:s");
     sendTele($msg);
 }
 
-echo "SATPAM AKTIF";
+/* OUTPUT */
+echo "SATPAM AKTIF - ".date("H:i:s");
 ?>
