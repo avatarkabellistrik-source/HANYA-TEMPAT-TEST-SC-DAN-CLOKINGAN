@@ -1,0 +1,111 @@
+<?php
+error_reporting(E_ALL);
+set_time_limit(0);
+
+/* ================= CONFIG ================= */
+$token   = "8687462257:AAEzX81PQXglaSAcKi2pz1zg01Kb-XXBOQ4";
+$chat_id = "8259867883";
+
+/* TELEGRAM */
+function sendTele($msg){
+    global $token,$chat_id;
+
+    $url = "https://api.telegram.org/bot$token/sendMessage";
+
+    $data = [
+        "chat_id"=>$chat_id,
+        "text"=>$msg
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_POST,1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS,$data);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+
+    $res = curl_exec($ch);
+
+    if(!$res){
+        file_put_contents(__DIR__.'/tele_error.log', curl_error($ch)."\n", FILE_APPEND);
+    }
+
+    curl_close($ch);
+}
+
+/* ROOT */
+$root = $_SERVER['DOCUMENT_ROOT'] ?: __DIR__;
+
+/* DB */
+$db = __DIR__."/.scan_db.json";
+
+/* EXT */
+$watch_ext = ['php','phtml','php5','php7','phar','pht','html','htm'];
+
+/* LOAD */
+$old = file_exists($db)?json_decode(file_get_contents($db),true):[];
+
+/* SCAN */
+function scan($dir){
+    global $watch_ext;
+
+    $res = [];
+
+    $files = @scandir($dir);
+    if(!$files) return $res;
+
+    foreach($files as $f){
+        if($f=="."||$f=="..") continue;
+
+        $path = $dir.'/'.$f;
+
+        if(is_dir($path)){
+            $res += scan($path);
+        } else {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if(in_array($ext,$watch_ext)){
+                $res[$path] = @filemtime($path);
+            }
+        }
+    }
+
+    return $res;
+}
+
+/* ================= PROCESS ================= */
+$new = scan($root);
+
+$msg = "🚨 AKTIVITAS FILE TERDETEKSI 🚨\n\n";
+$found = false;
+
+/* FILE BARU / DIUBAH */
+foreach($new as $file=>$time){
+
+    if(!isset($old[$file])){
+        $msg .= "🆕 FILE BARU\n📄 $file\n\n";
+        $found = true;
+    }
+    elseif($old[$file] != $time){
+        $msg .= "✏️ FILE DIUBAH\n📄 $file\n\n";
+        $found = true;
+    }
+}
+
+/* FILE DIHAPUS */
+foreach($old as $file=>$time){
+    if(!isset($new[$file])){
+        $msg .= "🗑 FILE DIHAPUS\n📄 $file\n\n";
+        $found = true;
+    }
+}
+
+/* SAVE */
+file_put_contents($db,json_encode($new));
+
+/* SEND */
+if($found){
+    $msg .= "⏰ ".date("Y-m-d H:i:s");
+    sendTele($msg);
+}
+
+/* OUTPUT */
+echo "MONITOR AKTIF ".date("H:i:s");
+?>
