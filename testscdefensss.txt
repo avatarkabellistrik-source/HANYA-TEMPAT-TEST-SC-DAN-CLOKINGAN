@@ -26,24 +26,22 @@ $root = $_SERVER['DOCUMENT_ROOT'] ?: __DIR__;
 
 /* DB */
 $db = __DIR__."/.scan_db.json";
-$reported_db = __DIR__."/.reported.json";
 
 /* EXT */
 $watch_ext = ['php','phtml','php5','php7','phar','pht'];
 
 /* LOAD */
 $old = file_exists($db)?json_decode(file_get_contents($db),true):[];
-$reported = file_exists($reported_db)?json_decode(file_get_contents($reported_db),true):[];
 
-/* SCAN (DEEP) */
+/* SCAN DALAM */
 function scan($dir){
     global $watch_ext;
 
     $res = [];
-    $files = @scandir($dir);
-    if(!$files) return $res;
+    $list = @scandir($dir);
+    if(!$list) return $res;
 
-    foreach($files as $f){
+    foreach($list as $f){
         if($f=="."||$f=="..") continue;
 
         $path = $dir.'/'.$f;
@@ -65,42 +63,27 @@ function detectShell($file){
 
     if(!file_exists($file)) return false;
 
-    // skip file besar (biasanya legit)
-    if(filesize($file) > 500000) return false;
-
     $c = @file_get_contents($file);
     if(!$c) return false;
 
     $score = 0;
 
-    // 🚨 REMOTE LOADER
-    if(preg_match('/https?:\/\/.+/i',$c)) $score+=5;
+    // 🔥 REMOTE LOADER (GitHub / URL)
     if(preg_match('/file_get_contents\s*\(\s*[\'"]https?:\/\//i',$c)) $score+=10;
-
-    // eval + external
     if(stripos($c,'eval(')!==false && preg_match('/https?:\/\//i',$c)) $score+=10;
 
-    // command execution
+    // 🔥 COMMAND EXECUTION
     if(stripos($c,'system(')!==false) $score+=5;
     if(stripos($c,'exec(')!==false) $score+=5;
     if(stripos($c,'shell_exec')!==false) $score+=5;
 
-    // obfuscation
+    // 🔥 OBFUSCATION
     if(stripos($c,'base64_decode')!==false) $score+=4;
     if(stripos($c,'gzinflate')!==false) $score+=4;
 
-    // kombinasi kuat
-    if(preg_match('/base64_decode/i',$c) && preg_match('/eval/i',$c)) $score+=8;
-
-    // input + exec
-    if(preg_match('/\$_(GET|POST|REQUEST)/i',$c) &&
-       preg_match('/system|exec|shell_exec/i',$c)){
-        $score+=6;
-    }
-
-    // base64 panjang
-    if(preg_match('/[A-Za-z0-9\/+]{200,}/',$c)){
-        $score+=5;
+    // 🔥 KOMBINASI KUAT (indikasi shell)
+    if(preg_match('/(eval|base64_decode|gzinflate).*(\$_GET|\$_POST|\$_REQUEST)/i',$c)){
+        $score+=8;
     }
 
     return ($score >= 8) ? $score : false;
@@ -115,7 +98,10 @@ $found = false;
 /* FILE BARU / DIUBAH */
 foreach($new as $file=>$time){
 
-    // skip folder legit (biar gak spam)
+    // ❌ skip file sendiri
+    if($file == __FILE__) continue;
+
+    // ❌ skip folder normal
     if(stripos($file,'/vendor/')!==false) continue;
     if(stripos($file,'/lib/')!==false) continue;
     if(stripos($file,'/plugins/')!==false) continue;
@@ -129,17 +115,9 @@ foreach($new as $file=>$time){
     $risk = detectShell($file);
 
     if($risk){
-
-        // 🔥 ANTI SPAM
-        if(isset($reported[$file]) && $reported[$file] == $time){
-            continue;
-        }
-
         $msg .= "📄 FILE ".($is_new?"BARU":"DIUBAH")."\n";
         $msg .= "📍 $file\n";
         $msg .= "⚠️ LEVEL: $risk\n\n";
-
-        $reported[$file] = $time;
         $found = true;
     }
 }
@@ -148,20 +126,14 @@ foreach($new as $file=>$time){
 foreach($old as $file=>$time){
 
     if(!isset($new[$file])){
-
-        if(isset($reported[$file])){
-            $msg .= "🗑 FILE SHELL DIHAPUS\n";
-            $msg .= "📄 $file\n\n";
-
-            unset($reported[$file]);
-            $found = true;
-        }
+        $msg .= "🗑 FILE DIHAPUS\n";
+        $msg .= "📄 $file\n\n";
+        $found = true;
     }
 }
 
 /* SAVE */
 file_put_contents($db,json_encode($new));
-file_put_contents($reported_db,json_encode($reported));
 
 /* SEND */
 if($found){
