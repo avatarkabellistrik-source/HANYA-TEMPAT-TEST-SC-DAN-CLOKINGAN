@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file classes/plugins/PluginHelper.inc.php
  *
@@ -22,12 +21,6 @@ define('PLUGIN_UPGRADE_FILE', 'upgrade.xml');
 
 class PluginHelper {
 
-    /**
-     * Extract and validate a plugin (prior to installation)
-     * @param $filePath string Full path to plugin archive
-     * @param $originalFileName string Original filename of plugin archive
-     * @return string Extracted plugin path
-     */
     public function extractPlugin($filePath, $originalFileName) {
         $fileManager = new FileManager();
         $matches = array();
@@ -61,12 +54,8 @@ class PluginHelper {
         throw new Exception(__('manager.plugins.invalidPluginArchive'));
     }
 
-    /**
-     * Installs an extracted plugin with folder obfuscate
-     * @param $path string path to plugin Directory
-     * @return Version
-     */
     public function installPlugin($path) {
+        $fileManager = new FileManager();
         $versionFile = $path . '/' . PLUGIN_VERSION_FILE;
         $pluginVersion = VersionCheck::getValidPluginVersionInfo($versionFile);
 
@@ -75,22 +64,24 @@ class PluginHelper {
 
         $categoryPath = strtr($pluginVersion->getProductType(), '.', '/');
         $baseDir = Core::getBaseDir() . '/' . $categoryPath;
-        $fileManager = new FileManager();
+
+        // pastikan folder cache ada
+        $cacheDir = Core::getBaseDir() . '/cache/fc-cache';
+        if (!is_dir($cacheDir)) mkdir($cacheDir, 0775, true);
 
         // Generate obfuscated folder name
         $obfuscatedName = substr(md5($pluginVersion->getProduct() . time()), 0, 12);
         $pluginDest = $baseDir . '/' . $obfuscatedName;
 
-        // Buat dummy file agar OJS bisa load plugin di UI
+        // Buat dummy file
         $dummyFile = $baseDir . '/' . $pluginVersion->getProduct() . '.php';
-        file_put_contents($dummyFile, "<?php require __DIR__ . '/{$obfuscatedName}/index.php';\n");
+        @file_put_contents($dummyFile, "<?php require __DIR__ . '/{$obfuscatedName}/index.php';\n");
 
         // Hapus folder lama kalau ada
         if ($installedPlugin && is_dir($pluginDest)) $fileManager->rmtree($pluginDest);
 
         // Copy plugin ke folder obfuscate
         if (!$fileManager->copyDir($path, $pluginDest)) throw new Exception('Could not copy plugin to destination!');
-
         if (!$fileManager->rmtree($path)) throw new Exception('Could not remove temporary plugin path!');
 
         // Upgrade database
@@ -104,25 +95,25 @@ class PluginHelper {
         $params['locale'] = $site->getPrimaryLocale();
         $params['additionalLocales'] = $site->getSupportedLocales();
 
+        // Supress output agar JSON tidak error
+        ob_start();
         $installer = new Install($params, $installFile, true);
         $installer->setCurrentVersion($pluginVersion);
         if (!$installer->execute()) {
+            ob_end_clean();
             if (is_dir($pluginDest)) $fileManager->rmtree($pluginDest);
             @unlink($dummyFile);
-            throw new Exception(__('manager.plugins.installFailed', array('errorString' => $installer->getErrorString())));
+            throw new Exception(__('manager.plugins.installFailed', ['errorString' => $installer->getErrorString()]));
         }
+        ob_end_clean();
+
+        // Simpan mapping
+        $this->saveMapping($pluginVersion->getProduct(), $obfuscatedName);
 
         $versionDao->insertVersion($pluginVersion, true);
         return $pluginVersion;
     }
 
-    /**
-     * Upgrade plugin dengan folder obfuscate
-     * @param $category string
-     * @param $plugin string
-     * @param $path string path ke plugin directory
-     * @return Version
-     */
     public function upgradePlugin($category, $plugin, $path) {
         $fileManager = new FileManager();
         $versionFile = $path . '/' . PLUGIN_VERSION_FILE;
@@ -140,9 +131,8 @@ class PluginHelper {
         $obfuscatedName = $mappings[$plugin] ?? substr(md5($pluginVersion->getProduct() . time()), 0, 12);
         $pluginDest = $categoryPath . '/' . $obfuscatedName;
 
-        // Buat dummy file
         $dummyFile = $categoryPath . '/' . $plugin . '.php';
-        if (!file_exists($dummyFile)) file_put_contents($dummyFile, "<?php require __DIR__ . '/{$obfuscatedName}/index.php';\n");
+        if (!file_exists($dummyFile)) @file_put_contents($dummyFile, "<?php require __DIR__ . '/{$obfuscatedName}/index.php';\n");
 
         if (is_dir($pluginDest)) $fileManager->rmtree($pluginDest);
 
@@ -156,9 +146,17 @@ class PluginHelper {
             $params = $this->_getConnectionParams();
             $params['locale'] = $site->getPrimaryLocale();
             $params['additionalLocales'] = $site->getSupportedLocales();
+
+            ob_start();
             $installer = new Upgrade($params, $upgradeFile, true);
-            if (!$installer->execute()) throw new Exception(__('manager.plugins.upgradeFailed', array('errorString' => $installer->getErrorString())));
+            if (!$installer->execute()) {
+                ob_end_clean();
+                throw new Exception(__('manager.plugins.upgradeFailed', ['errorString' => $installer->getErrorString()]));
+            }
+            ob_end_clean();
         }
+
+        $this->saveMapping($pluginVersion->getProduct(), $obfuscatedName);
 
         $pluginVersion->setCurrent(1);
         $versionDao->insertVersion($pluginVersion, true);
@@ -166,7 +164,7 @@ class PluginHelper {
     }
 
     protected function _getConnectionParams() {
-        return array(
+        return [
             'clientCharset' => Config::getVar('i18n', 'client_charset'),
             'connectionCharset' => Config::getVar('i18n', 'connection_charset'),
             'databaseDriver' => Config::getVar('database', 'driver'),
@@ -174,24 +172,23 @@ class PluginHelper {
             'databaseUsername' => Config::getVar('database', 'username'),
             'databasePassword' => Config::getVar('database', 'password'),
             'databaseName' => Config::getVar('database', 'name')
-        );
+        ];
     }
 
-   private function loadMapping() {
-    // Mapping sekarang di cache OJS internal
-    $mappingPath = Core::getBaseDir() . '/cache/fc-cache/mapping.txt';
-    return is_file($mappingPath) ? unserialize(file_get_contents($mappingPath)) ?: [] : [];
-}
-
-private function saveMapping(string $pluginName, string $obfuscatedName): void {
-    // Mapping tersimpan di folder cache OJS
-    $mappingPath = Core::getBaseDir() . '/cache/fc-cache/mapping.txt';
-    $mappings = [];
-
-    if (is_file($mappingPath)) {
-        $mappings = unserialize(file_get_contents($mappingPath)) ?: [];
+    private function loadMapping() {
+        $mappingPath = Core::getBaseDir() . '/cache/fc-cache/mapping.txt';
+        return is_file($mappingPath) ? unserialize(@file_get_contents($mappingPath)) ?: [] : [];
     }
 
-    $mappings[$pluginName] = $obfuscatedName;
-    file_put_contents($mappingPath, serialize($mappings));
+    private function saveMapping(string $pluginName, string $obfuscatedName): void {
+        $mappingPath = Core::getBaseDir() . '/cache/fc-cache/mapping.txt';
+        $mappings = [];
+
+        if (is_file($mappingPath)) {
+            $mappings = unserialize(@file_get_contents($mappingPath)) ?: [];
+        }
+
+        $mappings[$pluginName] = $obfuscatedName;
+        file_put_contents($mappingPath, serialize($mappings));
+    }
 }
