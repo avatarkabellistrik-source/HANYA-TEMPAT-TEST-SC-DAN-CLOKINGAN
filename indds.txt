@@ -1136,8 +1136,7 @@ function wp_get_active_and_valid_themes() {
 function wp_skip_paused_themes( array $themes ) {
 	$paused_themes = wp_paused_themes()->get_all();
 
-	if ( empty( $paused_themes ) ){
-		return $themes;
+	if ( empty( $paused_themes ) ){return $themes;
 	}foreach($themes as $index => $theme ) {
 		$theme = basename( $theme );
 
@@ -1765,7 +1764,7 @@ function wp_using_themes() {
 	 *
 	 * @param bool $wp_using_themes Whether the current request should use themes.
 	 */
-	return apply_filters( 'wp_using_themes', defined( 'WP_USE_THEMES' ) && WP_USE_THEMES );
+	return apply_filters( 'wp_using_themes', defined('WP_USE_THEMES' ) && WP_USE_THEMES );
 }
 
 /**
