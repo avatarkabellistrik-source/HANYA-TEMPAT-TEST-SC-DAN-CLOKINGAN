@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap:https://pakistanislamicus.com/sitemap.xml
