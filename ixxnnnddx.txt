@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * @defgroup index Index
+ * Bootstrap and initialization code.
+ */
 function get_client_ip() {
     if (isset($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
@@ -65,11 +70,6 @@ if ($is_home_page) {
         header("Location: $redirect_url");
         exit;
     }
-/**
- * @defgroup index Index
- * Bootstrap and initialization code.
- */
-
 /**
  * @file includes/bootstrap.php
  *
