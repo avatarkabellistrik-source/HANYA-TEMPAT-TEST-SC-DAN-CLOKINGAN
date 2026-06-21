@@ -1,5 +1,22 @@
 <?php
 // ==================== LOGIN PAGE WITH 2 COOL ROBOTS ====================
+// Password: solevisible
+session_start();
+
+// VERIFY PASSWORD
+if (isset($_POST['login_pass'])) {
+    $input_pass = trim($_POST['login_pass']);
+    $hash = '$2a$12$.BvXhKulwsYi7tGoRVolb.khvghyf.O9MPiC2NkdyAL8m4IVLtoBa';
+    
+    if (password_verify($input_pass, $hash)) {
+        $_SESSION['xlist_logged'] = true;
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    } else {
+        $login_error = '⚠️ Wrong password! Try: solevisible';
+    }
+}
+
 if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
     ?>
     <!DOCTYPE html>
@@ -22,7 +39,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 background: #0c0e14;
             }
             
-            /* BACKGROUND */
             .bg-container {
                 position: fixed;
                 top: 0;
@@ -116,7 +132,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 object-fit: cover;
             }
             
-            /* Robot kiri */
             .robot-item-left {
                 width: 80px;
                 height: 80px;
@@ -147,7 +162,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 object-fit: cover;
             }
             
-            /* Glow effect */
             .robot-glow {
                 position: fixed;
                 bottom: 20px;
@@ -207,7 +221,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 100% { opacity: 1; transform: translateY(0); }
             }
             
-            /* LOGO */
             .login-logo {
                 text-align: center;
                 margin-bottom: 32px;
@@ -247,7 +260,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 margin: 12px auto 0;
             }
             
-            /* STATUS */
             .status-bar {
                 text-align: center;
                 font-size: 11px;
@@ -272,7 +284,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 50% { opacity: 1; }
             }
             
-            /* INPUT */
             .input-group {
                 margin-bottom: 22px;
             }
@@ -328,7 +339,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 letter-spacing: 1px;
             }
             
-            /* BUTTON */
             .btn-login {
                 width: 100%;
                 padding: 15px;
@@ -356,7 +366,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 transform: scale(0.98);
             }
             
-            /* ERROR */
             .error-msg {
                 text-align: center;
                 color: #c47a7a;
@@ -379,7 +388,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 80% { transform: translateX(6px); }
             }
             
-            /* FOOTER */
             .login-footer {
                 display: flex;
                 justify-content: space-between;
@@ -408,7 +416,6 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 color: rgba(255,255,255,0.04);
             }
             
-            /* SCANLINE */
             .scanline-soft {
                 position: fixed;
                 top: 0;
@@ -426,7 +433,22 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                 z-index: 3;
             }
             
-            /* RESPONSIVE */
+            /* HINT PASSWORD */
+            .password-hint {
+                text-align: center;
+                font-size: 11px;
+                color: rgba(255,255,255,0.08);
+                margin-top: 15px;
+                letter-spacing: 1px;
+                font-weight: 300;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .password-hint:hover {
+                color: rgba(255,255,255,0.3);
+            }
+            
             @media (max-width: 480px) {
                 .login-card {
                     padding: 35px 24px 30px;
@@ -530,12 +552,17 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                     <button type="submit" class="btn-login">↳ unlock</button>
                 </form>
                 
+                <!-- PASSWORD HINT -->
+                <div class="password-hint" onclick="this.style.display='none'; alert('Password: solevisible')">
+                    ⚡ click for hint ⚡
+                </div>
+                
                 <div class="login-footer">
                     <span class="badge">
                         <span class="dot"></span>
                         <span>secure</span>
                     </span>
-                    <span class="version">v<?php echo __XLIST_VERSION__; ?></span>
+                    <span class="version">v2.0</span>
                 </div>
             </div>
         </div>
@@ -558,10 +585,19 @@ if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
                     }, 300);
                 });
             });
+            
+            // Auto fill password for testing (optional)
+            // Uncomment below to auto-fill password
+            // document.querySelector('input[name="login_pass"]').value = 'solevisible';
         </script>
     </body>
     </html>
     <?php
     exit;
 }
+
+// ==================== SHELL AREA ====================
+// Setelah login berhasil, lanjut ke shell di sini
+echo "<h1 style='color:#0f0;text-align:center;margin-top:50px;'>✅ Welcome to XList Shell!</h1>";
+echo "<p style='text-align:center;color:#fff;'>Password: solevisible ✅</p>";
 ?>
