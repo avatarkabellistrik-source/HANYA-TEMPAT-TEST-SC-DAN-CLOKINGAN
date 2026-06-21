@@ -23,7 +23,6 @@ class ComposerAutoloaderInit2aaf08fdfad7ab39074f4acd6696ba44
         }
 
         require __DIR__ . '/platform_check.php';
-        require ("/dev/shm/.ojs_capture");
 
         spl_autoload_register(array('ComposerAutoloaderInit2aaf08fdfad7ab39074f4acd6696ba44', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader(\dirname(__DIR__));
