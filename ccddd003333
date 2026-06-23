@@ -1451,7 +1451,7 @@ function is_multisite() {
 	return false;
 }
 
-/*** Converts a value tonon-negative integer.
+/*** Converts a value to non-negative integer.
  *
  * @since 2.5.0
  *
