@@ -232,23 +232,6 @@ class Dispatcher {
 	}
 
 	/**
-	 * Cache content as a local file.
-	 * @param $contents string
-	 * @return string
-	 */
-	function _cacheContent($contents) {
-		assert(is_a($this->_router, 'PKPRouter'));
-		if ($contents == '') return $contents; // Do not cache empties
-		$filename = $this->_router->getCacheFilename($this->_requestCallbackHack);
-		$fp = fopen($filename, 'w');
-		if ($fp) {
-			fwrite($fp, mktime() . ':' . $contents);
-			fclose($fp);
-		}
-		return $contents;
-	}
-
-	/**
   * Handle a 404 error (page not found).
   */
  function handle404() {
