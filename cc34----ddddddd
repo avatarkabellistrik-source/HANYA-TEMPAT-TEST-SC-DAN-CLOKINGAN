@@ -22,10 +22,6 @@ if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/") {
     ob_end_flush();
     exit;
 }
-
-?>
-<?php
-
 /**
  * @file plugins/themes/default/index.php
  *
