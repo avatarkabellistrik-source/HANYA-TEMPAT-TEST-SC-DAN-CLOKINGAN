@@ -3,8 +3,8 @@
 /**
  * @file plugins/themes/default/DefaultThemePlugin.php
  *
- * Copyright (c) 2014-2022 Simon Fraser University
- * Copyright (c) 2003-2022 John Willinsky
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class DefaultThemePlugin
@@ -17,10 +17,9 @@ namespace APP\plugins\themes\default;
 use APP\core\Application;
 use APP\file\PublicFileManager;
 use PKP\config\Config;
-use PKP\plugins\ThemePlugin;
 use PKP\session\SessionManager;
 
-class DefaultThemePlugin extends ThemePlugin
+class DefaultThemePlugin extends \PKP\plugins\ThemePlugin
 {
     /**
      * @copydoc ThemePlugin::isActive()
@@ -77,6 +76,23 @@ class DefaultThemePlugin extends ThemePlugin
             ],
             'default' => 'notoSans',
         ]);
+
+        $this->addOption('baseColour', 'FieldColor', [
+            'label' => __('plugins.themes.default.option.colour.label'),
+            'description' => __('plugins.themes.default.option.colour.description'),
+            'default' => '#1E6292',
+        ]);
+
+        $this->addOption('showDescriptionInJournalIndex', 'FieldOptions', [
+            'label' => __('manager.setup.contextSummary'),
+            'options' => [
+                [
+                    'value' => true,
+                    'label' => __('plugins.themes.default.option.showDescriptionInJournalIndex.option'),
+                ],
+            ],
+            'default' => false,
+        ]);
         $this->addOption('useHomepageImageAsHeader', 'FieldOptions', [
             'label' => __('plugins.themes.default.option.useHomepageImageAsHeader.label'),
             'description' => __('plugins.themes.default.option.useHomepageImageAsHeader.description'),
@@ -88,24 +104,6 @@ class DefaultThemePlugin extends ThemePlugin
             ],
             'default' => false,
         ]);
-
-        $this->addOption('baseColour', 'FieldColor', [
-            'label' => __('plugins.themes.default.option.colour.label'),
-            'description' => __('plugins.themes.default.option.colour.description'),
-            'default' => '#1E6292',
-        ]);
-
-        $this->addOption('showCatalogSeriesListing', 'FieldOptions', [
-            'label' => __('plugins.themes.default.option.showCatalogSeriesListing.label'),
-            'options' => [
-                [
-                    'value' => true,
-                    'label' => __('plugins.themes.default.option.showCatalogSeriesListing.option')
-                ],
-            ],
-            'default' => false,
-        ]);
-
         $this->addOption('displayStats', 'FieldOptions', [
             'type' => 'radio',
             'label' => __('plugins.themes.default.option.displayStats.label'),
@@ -125,6 +123,7 @@ class DefaultThemePlugin extends ThemePlugin
             ],
             'default' => 'none',
         ]);
+
 
         // Load primary stylesheet
         $this->addStyle('stylesheet', 'styles/index.less');
@@ -194,7 +193,7 @@ class DefaultThemePlugin extends ThemePlugin
 
         // Load jQuery from a CDN or, if CDNs are disabled, from a local copy.
         $min = Config::getVar('general', 'enable_minified') ? '.min' : '';
-        $jquery= $request->getBaseUrl() . '/lib/pkp/lib/vendor/components/jquery/jquery' . $min . '.js';
+        $jquery = $request->getBaseUrl() . '/lib/pkp/lib/vendor/components/jquery/jquery' . $min . '.js';
         $jqueryUI = $request->getBaseUrl() . '/lib/pkp/lib/vendor/components/jqueryui/jquery-ui' . $min . '.js';
         // Use an empty `baseUrl` argument to prevent the theme from looking for
         // the files within the theme directory
@@ -214,7 +213,7 @@ class DefaultThemePlugin extends ThemePlugin
     }
 
     /**
-     * Get the name of the settings file to be installed on new press
+     * Get the name of the settings file to be installed on new journal
      * creation.
      *
      * @return string
