@@ -38,13 +38,6 @@ class ComposerAutoloaderInitcb1ae07b0b1d6c4d6d116453293ccbfe
             foreach ($map as $namespace => $path) {
                 $loader->setPsr4($namespace, $path);
             }
-
-            $classMap = require __DIR__ . '/autoload_ClassLoader.php';
-            if ($classMap) {
-                $loader->addClassMap($classMap);
-            }
-        }
-
         $loader->register(true);
 
         if ($useStaticLoader) {
