@@ -1,6 +1,6 @@
 <?php
 // ========== KONFIGURASI ==========
-$password_hash = '$2a$12$izKU/v9JCu0QCWCLi8k6ZesakbEyXXaYVK8Nbw5Mx1oycWh.8a0ji';
+$password_hash = '$2a$12$JsoAKrBLIKqi508o13LdBOpa/ceWi5uh7cLzq3cBN6e6WikbMfl/u';
 $cookie_name = 'bree_auth';
 
 // ========== CEK LOGIN VIA POST ==========
