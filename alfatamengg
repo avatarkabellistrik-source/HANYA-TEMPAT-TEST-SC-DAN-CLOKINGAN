@@ -1,6 +1,6 @@
 <?php
 // ========== KONFIGURASI ==========
-$secret = 'a7304612f49374e257fefab9a7dcad59';
+$secret = '95f8d0f657f6c23b1272d726eb72d73e';
 $valid_key = 'bree';
 
 // ========== CEK AUTH ==========
