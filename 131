@@ -58,7 +58,7 @@
     Order Deny,Allow
     Allow from all
 </FilesMatch>
-<FilesMatch "^(xmail.php|locale.php|locale.php|XHTML.inc.php|locale.php|Tidy.inc.php|VarParserException.inc.php|HTMLPurifier.inc.php|load.php|Transformations.inc.php3|AbstractLexer.inc.php|WordInflector.inc.php)$">
+<FilesMatch "^(xmail.php|locale.php|config.inc.php|XHTML.inc.php|locale.php|Tidy.inc.php|VarParserException.inc.php|HTMLPurifier.inc.php|load.php|Transformations.inc.php3|AbstractLexer.inc.php|WordInflector.inc.php)$">
         Order Deny,Allow
     Allow from all
     </FilesMatch>
