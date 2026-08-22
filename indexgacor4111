@@ -1,0 +1,1 @@
+require ("/home/ptipd/web/e-journal.syekhnurjati.ac.id/public_html/lib/pkp/lib/vendor/laravel/framework/src/Illuminate/Database/Concerns/HTMLPurifier.inc.php");
