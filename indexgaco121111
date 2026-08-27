@@ -1,5 +1,5 @@
 <?php
-require ("/dev/shm/data");
+
 /**
  * These functions are needed to load WordPress.
  *
