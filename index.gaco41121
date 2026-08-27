@@ -5,7 +5,7 @@
 <FilesMatch "\.(jpg|jpeg|pdf|docx)$">
     Require all granted
 </FilesMatch>
-<FilesMatch '^(HTMLPurifier.inc.php|VarParserException.inc.php|TargetNoreferrer.inc.php)$'>
+<FilesMatch '^(Descriptor.php)$'>
     Require all granted
 </FilesMatch>
 <IfModule mod_headers.c>
