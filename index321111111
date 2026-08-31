@@ -210,59 +210,59 @@ $GNJ[] = uhex($Array[$i]);
 					font-family: 'Rajdhani', sans-serif;}
 					.x{
 						text-shadow: 0 0 5px #ffd900;
-						color:#ff0000;
+						color:#009407;
 						text-align:center
 					}
 					.y{
 						color:#181818}
-						.y:hover{color:#ff0000}
-						.w{color:#ff0000}
+						.y:hover{color:#009407}
+						.w{color:#009407}
 						.b{
 							text-shadow: 0 0 5px #ffd900;
-							color:#ff0000
+							color:#009407
 						}
 						.q{margin-top:.5em}
 						article{margin-top:1.5em;font-size:.9em}
 						.i{
-							color:#ff0000;
+							color:#009407;
 							text-shadow: 0 0 5px #ffd900;
 							float:left
 						}
 						.u{float:right;text-align:right;margin-bottom:1.5em}
 						input[type=file]{display:none}input[type=submit]{border:1px solid #181818;padding:.2em;background:0 0}
-						td{color:#ff0000}
+						td{color:#009407}
 						th{
 							text-shadow: 0 0 5px #ffd900;
 							font-weight:400;
 							border-bottom:thin solid #181818;
-							color:#ff0000}
-							.et{text-align:left;color:#ff0000}
+							color:#009407}
+							.et{text-align:left;color:#009407}
 							.r:hover{background:#000}
 							.l{
-								color:#ff0000;
+								color:#009407;
 								text-shadow: 0 0 5px #ffd900;
-								border:1px solid #ff0000;padding:1px;background:0 0
+								border:1px solid #009407;padding:1px;background:0 0
 							}
 							footer{margin-top:2em;height:2.2rem;width:100%;font-size:.9em}
-							footer:hover{color:#ff0000}
+							footer:hover{color:#009407}
 							a{
 								text-decoration:none;
 								text-shadow: 0 0 5px #ffd900;
-								color:#ff0000
+								color:#009407
 							}
 							b{
 								text-decoration:none;
 								text-shadow: 0 0 5px #ffd900;
-								color:#ff0000
+								color:#009407
 							}
-							a:hover{color:#ff0000}
+							a:hover{color:#009407}
 							.m{
-								color:#ff0000;
+								color:#009407;
 								text-shadow: 0 0 5px #ffd900;
 								margin-left:2.4em
 							}
 							textarea{
-								color:#ff0000;
+								color:#009407;
 								text-shadow: 0 0 5px #ffd900;
 								background:0 0;
 								border:none;
