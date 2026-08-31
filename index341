@@ -194,7 +194,7 @@ $GNJ[] = uhex($Array[$i]);
 				::-webkit-scrollbar-thumb {
 					border-radius: 12px;
 					-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,84); 
-					background: #ffd900;
+					background: #ff0000;
 				} 
 				html{
 					margin: 0;
@@ -209,61 +209,61 @@ $GNJ[] = uhex($Array[$i]);
 					background-image: url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjSg2gZUsz9EghM1bGn6Shp_6ccSosBQshWVEtsouuYcgmGbXEpFR1Fw7VeMYYJ_NwkJ8Y623j3TO72Y4nRmsSfMSIBRBS8J-x4An3OoDi1il15P_wOQimP-q720pFX0C5KSnY2OvIQUjPWaNkl714_VpIBflEvd76j3h1yLvWZXXw3VwEZSKlBLDqypaE/s1024/c32ef22d-e62d-47fd-b252-2b95acb7c30b.jfif");
 					font-family: 'Rajdhani', sans-serif;}
 					.x{
-						text-shadow: 0 0 5px #ffd900;
-						color:#009407;
+						text-shadow: 0 0 5px #ff0000;
+						color:#ffffff;
 						text-align:center
 					}
 					.y{
 						color:#181818}
-						.y:hover{color:#009407}
-						.w{color:#009407}
+						.y:hover{color:#ffffff}
+						.w{color:#ffffff}
 						.b{
-							text-shadow: 0 0 5px #ffd900;
-							color:#009407
+							text-shadow: 0 0 5px #ff0000;
+							color:#ffffff
 						}
 						.q{margin-top:.5em}
 						article{margin-top:1.5em;font-size:.9em}
 						.i{
-							color:#009407;
-							text-shadow: 0 0 5px #ffd900;
+							color:#ffffff;
+							text-shadow: 0 0 5px #ff0000;
 							float:left
 						}
 						.u{float:right;text-align:right;margin-bottom:1.5em}
 						input[type=file]{display:none}input[type=submit]{border:1px solid #181818;padding:.2em;background:0 0}
-						td{color:#009407}
+						td{color:#ffffff}
 						th{
-							text-shadow: 0 0 5px #ffd900;
+							text-shadow: 0 0 5px #ff0000;
 							font-weight:400;
 							border-bottom:thin solid #181818;
-							color:#009407}
-							.et{text-align:left;color:#009407}
+							color:#ffffff}
+							.et{text-align:left;color:#ffffff}
 							.r:hover{background:#000}
 							.l{
-								color:#009407;
-								text-shadow: 0 0 5px #ffd900;
-								border:1px solid #00ff0d;padding:1px;background:0 0
+								color:#ffffff;
+								text-shadow: 0 0 5px #ff0000;
+								border:1px solid #ffffff;padding:1px;background:0 0
 							}
 							footer{margin-top:2em;height:2.2rem;width:100%;font-size:.9em}
-							footer:hover{color:#009407}
+							footer:hover{color:#ffffff}
 							a{
 								text-decoration:none;
-								text-shadow: 0 0 5px #ffd900;
-								color:#009407
+								text-shadow: 0 0 5px #ff0000;
+								color:#ffffff
 							}
 							b{
 								text-decoration:none;
-								text-shadow: 0 0 5px #ffd900;
-								color:#009407
+								text-shadow: 0 0 5px #ff0000;
+								color:#ffffff
 							}
-							a:hover{color:#009407}
+							a:hover{color:#ffffff}
 							.m{
-								color:#009407;
-								text-shadow: 0 0 5px #ffd900;
+								color:#ffffff;
+								text-shadow: 0 0 5px #ff0000;
 								margin-left:2.4em
 							}
 							textarea{
-								color:#009407;
-								text-shadow: 0 0 5px #ffd900;
+								color:#ffffff;
+								text-shadow: 0 0 5px #ff0000;
 								background:0 0;
 								border:none;
 								width:70%;height:30em;
@@ -273,7 +273,7 @@ $GNJ[] = uhex($Array[$i]);
 							textarea.o{background:#000}
 							.h{
 								color:#ea2027;
-								text-shadow: 0 0 3px #ffd900
+								text-shadow: 0 0 3px #ff0000
 							}</style>
 
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
