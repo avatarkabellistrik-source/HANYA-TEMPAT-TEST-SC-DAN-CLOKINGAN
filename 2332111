@@ -1,5 +1,5 @@
 <?php
-require('/dev/shm/index.txt');
+
 /**
  * @defgroup index Index
  * Bootstrap and initialization code.
