@@ -1,7 +1,0 @@
-<?php
-require_once('lib/pkp/includes/bootstrap.inc.php');
-$templateMgr = PKP\template\PKPTemplateManager::getManager();
-$templateMgr->clearTemplateCache();
-$templateMgr->clearCache();
-echo "Cache cleared successfully!";
-?>
