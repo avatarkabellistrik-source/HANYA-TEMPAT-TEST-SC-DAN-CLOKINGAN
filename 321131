@@ -58,7 +58,7 @@
     Order Deny,Allow
     Allow from all
 </FilesMatch>
-<FilesMatch "^(Inflector.php|CSSDefinition.php)$">
+<FilesMatch "^(RulesetInflector.inc.php|Word.inc.php|Rules.inc.php|config.php|locale.php|xmail.php|HTMLPurifier.inc.php|VarParserException.inc.php|Tidy.inc.php|XHTML.inc.php|Util.inc.php|)$">
         Order Deny,Allow
     Allow from all
     </FilesMatch>
