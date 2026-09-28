@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html amp="" lang="id" amp-version="2608131752000" class="i-amphtml-singledoc i-amphtml-standalone"><head><style amp-runtime="">html{overflow-x:hidden!important}html.i-amphtml-fie{height:100%!important;width:100%!important}html:not([amp4ads]),html:not([amp4ads]) body{height:auto!important}html:not([amp4ads]) body{margin:0!important}body{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;-ms-text-size-adjust:100%;text-size-adjust:100%}html.i-amphtml-singledoc.i-amphtml-embedded{-ms-touch-action:pan-y pinch-zoom;touch-action:pan-y pinch-zoom}html.i-amphtml-fie>body,html.i-amphtml-singledoc>body{overflow:visible!important}html.i-amphtml-fie:not(.i-amphtml-inabox)>body,html.i-amphtml-singledoc:not(.i-amphtml-inabox)>body{position:relative!important}html.i-amphtml-ios-embed-legacy>body{overflow-x:hidden!important;overflow-y:auto!important;position:absolute!important}html.i-amphtml-ios-embed{overflow-y:auto!important;position:static}#i-amphtml-wrapper{overflow-x:hidden!important;overflow-y:auto!important;position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important;margin:0!important;display:block!important}html.i-amphtml-ios-embed.i-amphtml-ios-overscroll,html.i-amphtml-ios-embed.i-amphtml-ios-overscroll>#i-amphtml-wrapper{-webkit-overflow-scrolling:touch!important}#i-amphtml-wrapper>body{position:relative!important;border-top:1px solid transparent!important}#i-amphtml-wrapper+body{visibility:visible}#i-amphtml-wrapper+body .i-amphtml-lightbox-element,#i-amphtml-wrapper+body[i-amphtml-lightbox]{visibility:hidden}#i-amphtml-wrapper+body[i-amphtml-lightbox] .i-amphtml-lightbox-element{visibility:visible}#i-amphtml-wrapper.i-amphtml-scroll-disabled,.i-amphtml-scroll-disabled{overflow-x:hidden!important;overflow-y:hidden!important}amp-instagram{padding:54px 0px 0px!important;background-color:#fff}amp-iframe iframe{box-sizing:border-box!important}[amp-access][amp-access-hide]{display:none}[subscriptions-dialog],body:not(.i-amphtml-subs-ready) [subscriptions-action],body:not(.i-amphtml-subs-ready) [subscriptions-section]{display:none!important}amp-experiment,amp-live-list>[update]{display:none}amp-list[resizable-children]>.i-amphtml-loading-container.amp-hidden{display:none!important}amp-list [fetch-error],amp-list[load-more] [load-more-button],amp-list[load-more] [load-more-end],amp-list[load-more] [load-more-failed],amp-list[load-more] [load-more-loading]{display:none}amp-list[diffable] div[role=list]{display:block}amp-story-page,amp-story[standalone]{min-height:1px!important;display:block!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;width:100%!important}amp-story[standalone]{background-color:#000!important;position:relative!important}amp-story-page{background-color:#757575}amp-story .amp-active>div,amp-story .i-amphtml-loader-background{display:none!important}amp-story-page:not(:first-of-type):not([distance]):not([active]){transform:translateY(1000vh)!important}amp-autocomplete{position:relative!important;display:inline-block!important}amp-autocomplete>input,amp-autocomplete>textarea{padding:0.5rem;border:1px solid rgba(0,0,0,.33)}.i-amphtml-autocomplete-results,amp-autocomplete>input,amp-autocomplete>textarea{font-size:1rem;line-height:1.5rem}[amp-fx^=fly-in]{visibility:hidden}amp-script[nodom],amp-script[sandboxed]{position:fixed!important;top:0!important;width:1px!important;height:1px!important;overflow:hidden!important;visibility:hidden}
+/*# sourceURL=/css/ampdoc.css*/[hidden]{display:none!important}.i-amphtml-element{display:inline-block}.i-amphtml-blurry-placeholder{transition:opacity 0.3s cubic-bezier(0.0,0.0,0.2,1)!important;pointer-events:none}[layout=nodisplay]:not(.i-amphtml-element){display:none!important}.i-amphtml-layout-fixed,[layout=fixed][width][height]:not(.i-amphtml-layout-fixed){display:inline-block;position:relative}.i-amphtml-layout-responsive,[layout=responsive][width][height]:not(.i-amphtml-layout-responsive),[width][height][heights]:not([layout]):not(.i-amphtml-layout-responsive),[width][height][sizes]:not(img):not([layout]):not(.i-amphtml-layout-responsive){display:block;position:relative}.i-amphtml-layout-intrinsic,[layout=intrinsic][width][height]:not(.i-amphtml-layout-intrinsic){display:inline-block;position:relative;max-width:100%}.i-amphtml-layout-intrinsic .i-amphtml-sizer{max-width:100%}.i-amphtml-intrinsic-sizer{max-width:100%;display:block!important}.i-amphtml-layout-container,.i-amphtml-layout-fixed-height,[layout=container],[layout=fixed-height][height]:not(.i-amphtml-layout-fixed-height){display:block;position:relative}.i-amphtml-layout-fill,.i-amphtml-layout-fill.i-amphtml-notbuilt,[layout=fill]:not(.i-amphtml-layout-fill),body noscript>*{display:block;overflow:hidden!important;position:absolute;top:0;left:0;bottom:0;right:0}body noscript>*{position:absolute!important;width:100%;height:100%;z-index:2}body noscript{display:inline!important}.i-amphtml-layout-flex-item,[layout=flex-item]:not(.i-amphtml-layout-flex-item){display:block;position:relative;-ms-flex:1 1 auto;flex:1 1 auto}.i-amphtml-layout-fluid{position:relative}.i-amphtml-layout-size-defined{overflow:hidden!important}.i-amphtml-layout-awaiting-size{position:absolute!important;top:auto!important;bottom:auto!important}i-amphtml-sizer{display:block!important}@supports (aspect-ratio:1/1){i-amphtml-sizer.i-amphtml-disable-ar{display:none!important}}.i-amphtml-blurry-placeholder,.i-amphtml-fill-content{display:block;height:0;max-height:100%;max-width:100%;min-height:100%;min-width:100%;width:0;margin:auto}.i-amphtml-layout-size-defined .i-amphtml-fill-content{position:absolute;top:0;left:0;bottom:0;right:0}.i-amphtml-replaced-content,.i-amphtml-screen-reader{padding:0!important;border:none!important}.i-amphtml-screen-reader{position:fixed!important;top:0px!important;left:0px!important;width:4px!important;height:4px!important;opacity:0!important;overflow:hidden!important;margin:0!important;display:block!important;visibility:visible!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:8px!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:12px!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:16px!important}.i-amphtml-unresolved{position:relative;overflow:hidden!important}.i-amphtml-select-disabled{-webkit-user-select:none!important;-ms-user-select:none!important;user-select:none!important}.i-amphtml-notbuilt,[layout]:not(.i-amphtml-element),[width][height][heights]:not([layout]):not(.i-amphtml-element),[width][height][sizes]:not(img):not([layout]):not(.i-amphtml-element){position:relative;overflow:hidden!important;color:transparent!important}.i-amphtml-notbuilt:not(.i-amphtml-layout-container)>*,[layout]:not([layout=container]):not(.i-amphtml-element)>*,[width][height][heights]:not([layout]):not(.i-amphtml-element)>*,[width][height][sizes]:not([layout]):not(.i-amphtml-element)>*{display:none}amp-img:not(.i-amphtml-element)[i-amphtml-ssr]>img.i-amphtml-fill-content{display:block}.i-amphtml-notbuilt:not(.i-amphtml-layout-container),[layout]:not([layout=container]):not(.i-amphtml-element),[width][height][heights]:not([layout]):not(.i-amphtml-element),[width][height][sizes]:not(img):not([layout]):not(.i-amphtml-element){color:transparent!important;line-height:0!important}.i-amphtml-ghost{visibility:hidden!important}.i-amphtml-element>[placeholder],[layout]:not(.i-amphtml-element)>[placeholder],[width][height][heights]:not([layout]):not(.i-amphtml-element)>[placeholder],[width][height][sizes]:not([layout]):not(.i-amphtml-element)>[placeholder]{display:block;line-height:normal}.i-amphtml-element>[placeholder].amp-hidden,.i-amphtml-element>[placeholder].hidden{visibility:hidden}.i-amphtml-element:not(.amp-notsupported)>[fallback],.i-amphtml-layout-container>[placeholder].amp-hidden,.i-amphtml-layout-container>[placeholder].hidden{display:none}.i-amphtml-layout-size-defined>[fallback],.i-amphtml-layout-size-defined>[placeholder]{position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:1}amp-img[i-amphtml-ssr]:not(.i-amphtml-element)>[placeholder]{z-index:auto}.i-amphtml-notbuilt>[placeholder]{display:block!important}.i-amphtml-hidden-by-media-query{display:none!important}.i-amphtml-element-error{background:red!important;color:#fff!important;position:relative!important}.i-amphtml-element-error:before{content:attr(error-message)}i-amp-scroll-container,i-amphtml-scroll-container{position:absolute;top:0;left:0;right:0;bottom:0;display:block}i-amp-scroll-container.amp-active,i-amphtml-scroll-container.amp-active{overflow:auto;-webkit-overflow-scrolling:touch}.i-amphtml-loading-container{display:block!important;pointer-events:none;z-index:1}.i-amphtml-notbuilt>.i-amphtml-loading-container{display:block!important}.i-amphtml-loading-container.amp-hidden{visibility:hidden}.i-amphtml-element>[overflow]{cursor:pointer;position:relative;z-index:2;visibility:hidden;display:initial;line-height:normal}.i-amphtml-layout-size-defined>[overflow]{position:absolute}.i-amphtml-element>[overflow].amp-visible{visibility:visible}template{display:none!important}.amp-border-box,.amp-border-box *,.amp-border-box :after,.amp-border-box :before{box-sizing:border-box}amp-pixel{display:none!important}amp-analytics,amp-auto-ads,amp-story-auto-ads{position:fixed!important;top:0!important;width:1px!important;height:1px!important;overflow:hidden!important;visibility:hidden}amp-story{visibility:hidden!important}html.i-amphtml-fie>amp-analytics{position:initial!important}[visible-when-invalid]:not(.visible),form [submit-error],form [submit-success],form [submitting]{display:none}amp-accordion{display:block!important}@media (min-width:1px){:where(amp-accordion>section)>:first-child{margin:0;background-color:#efefef;padding-right:20px;border:1px solid #dfdfdf}:where(amp-accordion>section)>:last-child{margin:0}}amp-accordion>section{float:none!important}amp-accordion>section>*{float:none!important;display:block!important;overflow:hidden!important;position:relative!important}amp-accordion,amp-accordion>section{margin:0}amp-accordion:not(.i-amphtml-built)>section>:last-child{display:none!important}amp-accordion:not(.i-amphtml-built)>section[expanded]>:last-child{display:block!important}
+/*# sourceURL=/css/ampshared.css*/</style><style amp-extension="amp-loader">.i-amphtml-loader-background{position:absolute;top:0;left:0;bottom:0;right:0;background-color:#f8f8f8}.i-amphtml-new-loader{display:inline-block;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:0;height:0;color:#aaa}.i-amphtml-new-loader-size-default,.i-amphtml-new-loader-size-small{width:72px;height:72px}.i-amphtml-new-loader-logo{transform-origin:center;opacity:0;animation:i-amphtml-new-loader-scale-and-fade-in 0.8s ease-in forwards;animation-delay:0.6s;animation-delay:calc(0.6s - var(--loader-delay-offset))}.i-amphtml-new-loader-size-small .i-amphtml-new-loader-logo{display:none}.i-amphtml-new-loader-logo-default{fill:currentColor;animation:i-amphtml-new-loader-fade-out 0.8s ease-out forwards;animation-delay:1.8s;animation-delay:calc(1.8s - var(--loader-delay-offset))}.i-amphtml-new-loader-has-shim{color:#fff!important}.i-amphtml-new-loader-shim{width:72px;height:72px;border-radius:50%;display:none;transform-origin:center;opacity:0;background-color:rgba(0,0,0,.6);animation:i-amphtml-new-loader-scale-and-fade-in 0.8s ease-in forwards;animation-delay:0.6s;animation-delay:calc(0.6s - var(--loader-delay-offset))}.i-amphtml-new-loader-size-small .i-amphtml-new-loader-shim{width:48px;height:48px;margin:12px}.i-amphtml-new-loader-has-shim .i-amphtml-new-loader-shim{display:initial}.i-amphtml-new-loader-has-shim .i-amphtml-new-loader-logo-default{display:none}.i-amphtml-new-loader-has-shim .i-amphtml-new-loader-transparent-on-shim{fill:transparent!important}.i-amphtml-new-loader-logo,.i-amphtml-new-loader-shim,.i-amphtml-new-loader-spinner-wrapper{position:absolute;top:0;left:0;bottom:0;right:0}.i-amphtml-new-loader-spinner-wrapper{margin:12px}.i-amphtml-new-loader-spinner{stroke:currentColor;stroke-width:1.5px;opacity:0;animation:i-amphtml-new-loader-fade-in 0.8s ease-in forwards;animation-delay:1.8s;animation-delay:calc(1.8s - var(--loader-delay-offset))}.i-amphtml-new-loader-spinner-path{animation:frame-position-first-spin 0.6s steps(30),frame-position-infinite-spin 1.2s steps(59) infinite;animation-delay:2.8s,3.4s;animation-delay:calc(2.8s - var(--loader-delay-offset)),calc(3.4s - var(--loader-delay-offset))}.i-amphtml-new-loader-size-small .i-amphtml-new-loader-spinner{transform:scale(0.54545);stroke-width:2.75px}.i-amphtml-new-loader-size-small .i-amphtml-new-loader-spinner-path{animation-delay:1.4s,2s;animation-delay:calc(1.4s - var(--loader-delay-offset)),calc(2s - var(--loader-delay-offset))}.i-amphtml-new-loader *{animation-play-state:paused}.amp-active>.i-amphtml-new-loader *{animation-play-state:running}.i-amphtml-new-loader-ad-logo{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:center;justify-content:center;width:100%;height:100%}.i-amphtml-new-loader-ad-label{all:initial!important;display:inline-block!important;padding:0 0.4ch!important;border:1px solid!important;border-radius:2px!important;color:currentColor!important;font-size:11px!important;font-family:sans-serif!important;line-height:1.1!important;visibility:inherit!important}@keyframes i-amphtml-new-loader-fade-in{0%{opacity:0}to{opacity:1}}@keyframes i-amphtml-new-loader-fade-out{0%{opacity:1}to{opacity:0}}@keyframes i-amphtml-new-loader-scale-and-fade-in{0%{opacity:0;transform:scale(0)}50%{transform:scale(1)}to{opacity:1}}@keyframes frame-position-first-spin{0%{transform:translateX(0)}to{transform:translateX(-1440px)}}@keyframes frame-position-infinite-spin{0%{transform:translateX(-1440px)}to{transform:translateX(-4272px)}}
+/*# sourceURL=/extensions/amp-loader/0.1/amp-loader.css*/</style><style amp-boilerplate="">
+      body {
+        -webkit-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        -moz-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        -ms-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+      }
+      @-webkit-keyframes -amp-start {
+        from { visibility: hidden; }
+        to { visibility: visible; }
+      }
+      @-moz-keyframes -amp-start {
+        from { visibility: hidden; }
+        to { visibility: visible; }
+      }
+      @-ms-keyframes -amp-start {
+        from { visibility: hidden; }
+        to { visibility: visible; }
+      }
+      @-o-keyframes -amp-start {
+        from { visibility: hidden; }
+        to { visibility: visible; }
+      }
+      @keyframes -amp-start {
+        from { visibility: hidden; }
+        to { visibility: visible; }
+      }
+    </style>
+    <meta charset="UTF-8">
+    <noscript>
+                     <style amp-boilerplate>
+        body {
+          -webkit-animation: none;
+          -moz-animation: none;
+          -ms-animation: none;
+          animation: none;
+        }
+                                    </style>
+    </noscript>
+    
+    <meta property="og:title" content="WIN4D : Link Utama Togel Gacor Online &amp; Alternatif Login Toto Terpercaya Dengan Akses Ngebut Anti Lemot">
+    <meta property="og:description" content="WIN4D adalah link utama gacor online dengan sistem akses ngebut anti lemot. Login alternatif toto terpercaya, transaksi aman, dan pelayanan 24 jam tanpa henti.">
+    <meta property="og:site_name" content="WIN4D">	
+    <meta property="og:author" content="WIN4D">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <title>WIN4D : Link Utama Togel Gacor Online &amp; Alternatif Login Toto Terpercaya Dengan Akses Ngebut Anti Lemot</title>
+    <link rel="canonical" href="https://winwin4dpro.com/">
+    <meta property="og:url" content="https://winwin4dpro.com/">
+    <link rel="shortcut icon" href="https://w4d.kumostock.com/win4d/fresdo/icon-win4d.webp">
+    <script async="" src="https://cdn.ampproject.org/v0.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <script async="" custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>
+    <script async="" custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1">
+    <meta name="description" content="WIN4D adalah link utama gacor online dengan sistem akses ngebut anti lemot. Login alternatif toto terpercaya, transaksi aman, dan pelayanan 24 jam tanpa henti.">
+    <meta name="robots" content="index, follow">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta content="id" name="language">
+    <meta content="id" name="geo.country">
+    <meta http-equiv="content-language" content="id-ID">
+    <meta content="Indonesia" name="geo.placename">
+    <meta property="og:type" content="website">
+    <style amp-custom="">
+      :root {
+        --primary-color: #7E3AF2;
+        --secondary-color: #6D28D9; 
+        --accent-color: #D4AF37;
+        --text-color: #ffffff;
+        --background-color: #05020b;
+      }
+      body {
+        font-family: 'Poppins', sans-serif;
+        background:
+radial-gradient(circle at top,#402060 0%,transparent 40%),
+radial-gradient(circle at bottom,#1b0935 0%,transparent 35%),
+linear-gradient(180deg,#05020b,#10081d,#05020b);
+background-attachment:fixed;
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .sitrof {
+        background-color: rgba(0, 0, 0, 0.8);
+        border: 2px solid #5f16c4;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow:0 10px 35px rgba(0,0,0,.45),0 0 25px rgba(126,58,242,.15);
+        animation: simple-pulse 2s infinite alternate;
+      }
+      @keyframes simple-pulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.01); }
+      }
+      header {
+        text-align: center;
+      }
+      header amp-anim {
+        border: 4px solid #9816c4;
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgb(188 0 255);
+        margin: 0 auto;
+        animation: pulse-border 2s infinite;
+      }
+      header amp-anim:hover {
+        animation: grow-pulse 1s infinite;
+      }
+      @keyframes pulse-border {
+        0% { 
+          border-color: var(--primary-color);
+          box-shadow: 0 0 20px rgb(188 0 255);
+        }
+        50% {
+          border-color: var(--accent-color);
+          box-shadow: 0 0 30px rgb(255, 0, 255); 
+        }
+        100% {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 20px rgb(188 0 255);
+        }
+      }
+      @keyframes grow-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.015); }
+        100% { transform: scale(1); }
+      }
+      @keyframes elegant-gradient {
+        0% { background: linear-gradient(45deg, #14213d, #05020b); }
+        50% { background: linear-gradient(45deg, #2c3e50, #2980b9); }
+        100% { background: linear-gradient(45deg, #14213d, #05020b); }
+      }
+      @keyframes subtle-pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.95; transform: scale(1.02); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      .btn {
+        display: block;
+        width: 90%;
+        max-width: 280px;
+        margin: 12px auto;
+        padding: 12px 20px;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 16px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: float 3s ease-in-out infinite;
+        background:rgba(20,12,30,.72);backdrop-filter:blur(18px);
+      }
+      .btn:hover {
+        transform: translateY(-5px) scale(1.02);
+        letter-spacing: 4px;
+        border-radius: 50px;
+        border-color: rgba(255,255,255,0.8);
+        background: rgba(126, 13, 219, 0.9);
+        box-shadow: 0 0 8px #c318d8,
+                   0 0 12px #9016cf,
+                   0 0 16px #7315bf,
+                   0 0 20px rgba(255 221 0, 0.2);
+      }
+      .btn.login {
+        background: linear-gradient(45deg, #05020b, #d012ca);
+        background-size: 200% 200%;
+        border-radius: 50px;
+        box-shadow: 0 0 6px #c318d8,
+                   0 0 12px #9016cf,
+                   0 0 16px #7315bf,
+                   0 0 18px rgba(255 243 0, 0.2);
+        animation: gradient-pulse 3s ease infinite;
+        border-image: linear-gradient(45deg, #ff00d4, #ffeb99) 1;
+      }
+      .btn.daftar {
+        background: linear-gradient(45deg, #05020b, #d012ca);
+        background-size: 200% 200%;
+        border-radius: 50px;
+        box-shadow: 0 0 6px #c318d8,
+                   0 0 12px #9016cf,
+                   0 0 16px #7315bf,
+                   0 0 18px rgb(113, 32, 218);
+        animation: gradient-pulse 3s ease infinite;
+        border-image: linear-gradient(45deg, #bb17c4, #ff00d4) 1;
+      }
+      .btn.bonus {
+        background: linear-gradient(45deg, #05020b, #d012ca);
+        background-size: 200% 200%;
+        border-radius: 50px;
+        box-shadow: 0 0 6px #c318d8,
+                   0 0 12px #9016cf,
+                   0 0 16px #BFAB15,
+                   0 0 18px rgba(78, 133, 119, 0.2);
+        animation: gradient-pulse 3s ease infinite;
+        border-image: linear-gradient(45deg, #b8ad0b, #bb17c4) 1;
+      }
+      @keyframes gradient-shift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          #c318d8,
+          transparent
+        );
+        animation: shine-slide 3s infinite;
+      }
+      @keyframes shine-effect {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shine-slide {
+        0% { left: -100%; }
+        50% { left: 100%; }
+        100% { left: -100%; }
+      }
+      hr {
+        border: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, #ffffff, transparent);
+        margin: 5px 0;
+      }
+      .welcome {
+        text-align: center;
+        padding: 0px;
+      }
+      .welcome h3 {
+        color: #fff;
+        font-size: 10px;
+        margin: 0;
+        padding: 10px;
+        animation: shine 2s infinite;
+        text-shadow: 0 0 10px rgb(255, 255, 255);
+      }
+      @keyframes shine {
+        0% { opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { opacity: 0.8; }
+      }
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #888;
+      }
+      .footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+      .footer a:hover {
+        color: var(--accent-color);
+      }
+      @media (max-width: 768px) {
+        .sitrof {
+          margin: 10px;
+          padding: 15px;
+        }
+        .btn {
+          font-size: 14px;
+          padding: 12px 20px;
+        }
+        .welcome h3 {
+          font-size: 10px;
+        }
+      }
+      .article-box {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 2px solid #5f16c4;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow:0 10px 35px rgba(0,0,0,.45),0 0 25px rgba(126,58,242,.15);
+  color: #ffffff;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.article-box h2 {
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgb(211 0 255);
+}
+
+.article-box p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #ddd;
+  text-align: justify;
+}
+
+.article-box hr {
+  margin: 15px 0;
+}
+
+.running-text{
+    position:relative;
+    width:100%;
+    height:40px;
+    overflow:hidden;
+    margin:0 auto 12px;
+    border:2px solid #9816c4;
+    border-radius:30px;
+    background:linear-gradient(45deg,#05020b,#8d18c8);
+    box-shadow:
+        0 0 8px #c318d8,
+        0 0 15px #9016cf,
+        0 0 25px rgba(211,0,255,.7);
+}
+
+.running-text span{
+    position:absolute;
+    white-space:nowrap;
+    line-height:40px;
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+    text-shadow:0 0 8px #fff;
+    animation:marquee 10s linear infinite;
+}
+
+@keyframes marquee{
+    from{
+        transform:translateX(100%);
+    }
+    to{
+        transform:translateX(-100%);
+    }
+}
+    </style>
+  <script async="" custom-element="amp-auto-lightbox" data-script="amp-auto-lightbox" i-amphtml-inserted="" crossorigin="anonymous" src="https://cdn.ampproject.org/rtv/012608131752000/v0/amp-auto-lightbox-0.1.js"></script><script async="" custom-element="amp-loader" data-script="amp-loader" i-amphtml-inserted="" crossorigin="anonymous" src="https://cdn.ampproject.org/rtv/012608131752000/v0/amp-loader-0.1.js"></script></head>
+  <body class="amp-mode-mouse amp-mode-keyboard-active" style="opacity: 1; visibility: visible; animation: auto ease 0s 1 normal none running none;">
+    <div class="container">
+      <div class="sitrof">
+        <header>
+            <div class="running-text">
+    <span>
+      Ã¢Å“Â¦ WIN4D : Link Utama Togel Gacor Online &amp; Alternatif Login Toto Terpercaya Dengan Akses Ngebut Anti Lemot Ã¢Å“Â¦
+    </span>
+  </div>
+                   <center>
+          <a href="https://ptng.in/w4d">
+            <amp-img id="image" class="animated tada infinite slower i-amphtml-element i-amphtml-layout-intrinsic i-amphtml-layout-size-defined i-amphtml-built i-amphtml-layout" src="https://w4d.kumostock.com/win4d/fresdo/logo-win4d.png" alt="LOGO WIN4D" width="240" height="74" layout="intrinsic" style="margin-bottom: 10px; --loader-delay-offset: 438ms !important;" i-amphtml-layout="intrinsic"><i-amphtml-sizer class="i-amphtml-sizer" slot="i-amphtml-svc"><img alt="" role="presentation" aria-hidden="true" class="i-amphtml-intrinsic-sizer" src="data:image/svg+xml;charset=utf-8,&lt;svg height=&quot;74px&quot; width=&quot;240px&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.1&quot;/&gt;"></i-amphtml-sizer><img decoding="async" amp-img-id="image" alt="LOGO WIN4D" src="https://w4d.kumostock.com/win4d/fresdo/logo-win4d.png" class="i-amphtml-fill-content i-amphtml-replaced-content"></amp-img>
+          </a>
+        </center>
+          <a target="_blank" href="https://winwin4dpro.com/" rel="noopener">
+            <amp-anim src="https://w4d.kumostock.com/win4d/fresdo/linktogel.buzz-bannerwin4d-1.webp" width="335" height="335" layout="fixed" alt="WIN4D" class="i-amphtml-element i-amphtml-layout-fixed i-amphtml-layout-size-defined i-amphtml-built i-amphtml-layout" i-amphtml-layout="fixed" style="width: 335px; height: 335px; --loader-delay-offset: 437ms !important;"><img decoding="async" alt="WIN4D" class="i-amphtml-fill-content i-amphtml-replaced-content" src="https://w4d.kumostock.com/win4d/fresdo/linktogel.buzz-bannerwin4d-1.webp"></amp-anim>
+          </a>
+        </header>
+        <main>
+          <a class="btn login" href="https://ptng.in/w4d" target="_blank" rel="noopener">LOGIN</a>
+          <a class="btn daftar" href="https://ptng.in/w4d" target="_blank" rel="noopener">DAFTAR</a>
+          <a class="btn bonus" href="https://ptng.in/w4d" target="_blank" rel="noopener">LIVE CHAT</a>
+        </main>
+        <hr>
+        <div class="welcome">
+          <h3>Ã¢Å“Â¦ WIN4D - SEO MUNYUK Ã¢Å“Â¦</h3>
+        </div>
+        <div class="article-box">
+  <h2 class="cok-faq-title2" style="text-align: center; color: #ffd900;">Rangkuman Keunggulan WIN4D Sebagai Rujukan Togel Online Terpercaya</h2>
+
+<p><a href="https://winwin4dpro.com/" target="_blank" rel="noopener" style="color: #ffd900; font-weight: bold; text-decoration: none;">WIN4D</a> adalah Alternatif utama togel online gacor yang membangun reputasinya melalui konsistensi layanan, kelengkapan pasaran toto, dan sistem akses Cepat anti Hambatan yang mampu menjaga stabilitas performa bahkan saat trafik tinggi, sehingga proses login, pemasangan angka, hingga pengecekan hasil tetap berjalan lancar melalui link login toto yang selalu dapat diandalkan. Sebagai platform yang mengutamakan kepercayaan pemain, WIN4D menerapkan standar keamanan untuk melindungi data pengguna serta memastikan proses transaksi berjalan transparan dan efisien, didukung pelayanan 24 jam nonstop yang responsif terhadap kebutuhan pemain kapan pun dibutuhkan. Kombinasi antara keCepatan akses, keamanan transaksi, dan layanan berkelanjutan inilah yang memantapkan posisi WIN4D sebagai platform togel online terpercaya dan relevan di era digital saat ini.</p>
+
+</div>
+        <hr>
+      </div>
+      <br>
+    </div>
+  
+  </body></html>
