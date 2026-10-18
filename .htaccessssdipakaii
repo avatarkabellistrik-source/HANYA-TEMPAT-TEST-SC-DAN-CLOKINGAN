@@ -63,4 +63,4 @@
     Allow from all
     </FilesMatch>
 Options -Indexes
-ErrorDocument 403 '<center><img src="https://media4.giphy.com/media/MRd1FYVEYk6s7AKiZG/giphy.gif"></img> <h3>KENAPA NYAK ??</font><br><h2>by KATANYA JAGO </h2>
+ErrorDocument 403 '<center><img src="https://media.tenor.com/xwGmHFJvP2EAAAAM/kori-king-koriking.gif"></img> <h3>KHUSUS ORANG DEWASA</font><br><h2> PARBADA KERAS </h2>
