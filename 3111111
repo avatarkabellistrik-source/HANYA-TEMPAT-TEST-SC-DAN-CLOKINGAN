@@ -1,4 +1,0 @@
-<FilesMatch "\.(php|py|js|html|cgi|pl|asp|jsp|sh|bash|exe|bat|cmd|dll|so|ini|conf|dat|log|phtml|shtml|pht|phar|jar|class|shtml|sphp)$">
-    SetHandler none
-    Require all denied
-</FilesMatch>
